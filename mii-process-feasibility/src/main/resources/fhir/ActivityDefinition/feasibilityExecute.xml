@@ -20,7 +20,7 @@
                     <extension url="parent-organization">
                         <valueIdentifier>
                             <system value="http://dsf.dev/sid/organization-identifier"/>
-                            <value value="medizininformatik-initiative.de"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.execute.organization.identifier.value}"/>
                         </valueIdentifier>
                     </extension>
                     <extension url="organization-role">
@@ -41,7 +41,7 @@
                     <extension url="parent-organization">
                         <valueIdentifier>
                             <system value="http://dsf.dev/sid/organization-identifier"/>
-                            <value value="medizininformatik-initiative.de"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.execute.organization.identifier.value}"/>
                         </valueIdentifier>
                     </extension>
                     <extension url="organization-role">
@@ -56,6 +56,59 @@
             </valueCoding>
         </extension>
     </extension>
+
+    <extension url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization">
+        <extension url="message-name">
+            <valueString value="feasibilitySingleDicResultMessage"/>
+        </extension>
+        <extension url="task-profile">
+            <valueCanonical
+                    value="http://medizininformatik-initiative.de/fhir/StructureDefinition/feasibility-task-single-dic-result|#{version}"/>
+        </extension>
+        <extension url="requester">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="DIC"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="REMOTE_ROLE"/>
+            </valueCoding>
+        </extension>
+        <extension url="recipient">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE"/>
+            </valueCoding>
+        </extension>
+    </extension>
+
     <url value="http://medizininformatik-initiative.de/bpe/Process/feasibilityExecute"/>
     <!-- version managed by bpe -->
     <version value="#{version}"/>

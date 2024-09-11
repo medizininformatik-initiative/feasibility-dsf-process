@@ -36,28 +36,29 @@
         </extension>
         <extension url="requester">
             <valueCoding>
-                <extension url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role-practitioner">
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role-practitioner">
                     <extension url="parent-organization">
                         <valueIdentifier>
-                            <system value="http://dsf.dev/sid/organization-identifier" />
-                            <value value="medizininformatik-initiative.de" />
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="medizininformatik-initiative.de"/>
                         </valueIdentifier>
                     </extension>
                     <extension url="organization-role">
                         <valueCoding>
-                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role" />
-                            <code value="HRP" />
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
                         </valueCoding>
                     </extension>
                     <extension url="practitioner-role">
                         <valueCoding>
-                            <system value="http://dsf.dev/fhir/CodeSystem/practitioner-role" />
-                            <code value="DSF_ADMIN" />
+                            <system value="http://dsf.dev/fhir/CodeSystem/practitioner-role"/>
+                            <code value="DSF_ADMIN"/>
                         </valueCoding>
                     </extension>
                 </extension>
-                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization" />
-                <code value="LOCAL_ROLE_PRACTITIONER" />
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE_PRACTITIONER"/>
             </valueCoding>
         </extension>
         <extension url="recipient">
@@ -81,7 +82,78 @@
                 <code value="LOCAL_ROLE"/>
             </valueCoding>
         </extension>
+
+        <extension url="requester">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE"/>
+            </valueCoding>
+        </extension>
+        <extension url="requester">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role-practitioner">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
+                        </valueCoding>
+                    </extension>
+                    <extension url="practitioner-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/practitioner-role"/>
+                            <code value="DSF_ADMIN"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE_PRACTITIONER"/>
+            </valueCoding>
+        </extension>
+        <extension url="recipient">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE"/>
+            </valueCoding>
+        </extension>
     </extension>
+
     <extension url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization">
         <extension url="message-name">
             <valueString value="feasibilitySingleDicResultMessage"/>
@@ -89,6 +161,27 @@
         <extension url="task-profile">
             <valueCanonical
                     value="http://medizininformatik-initiative.de/fhir/StructureDefinition/feasibility-task-single-dic-result|#{version}"/>
+        </extension>
+        <extension url="requester">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="DIC"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="REMOTE_ROLE"/>
+            </valueCoding>
         </extension>
         <extension url="requester">
             <valueCoding>
@@ -119,6 +212,27 @@
                         <valueIdentifier>
                             <system value="http://dsf.dev/sid/organization-identifier"/>
                             <value value="medizininformatik-initiative.de"/>
+                        </valueIdentifier>
+                    </extension>
+                    <extension url="organization-role">
+                        <valueCoding>
+                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                            <code value="HRP"/>
+                        </valueCoding>
+                    </extension>
+                </extension>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
+                <code value="LOCAL_ROLE"/>
+            </valueCoding>
+        </extension>
+        <extension url="recipient">
+            <valueCoding>
+                <extension
+                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
+                    <extension url="parent-organization">
+                        <valueIdentifier>
+                            <system value="http://dsf.dev/sid/organization-identifier"/>
+                            <value value="#{edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value}"/>
                         </valueIdentifier>
                     </extension>
                     <extension url="organization-role">

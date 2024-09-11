@@ -30,6 +30,19 @@ public class EvaluationConfig {
     @Value("#{T(java.time.Duration).parse('${de.medizininformatik_initiative.feasibility_dsf_process.rate.limit.interval.duration:PT1H}')}")
     private Duration rateLimitTimeIntervalDuration;
 
+    @Value("${edu.ubi.medfak.feasibility.dsf.process.distribution:false}")
+    private boolean feasibilityDistribution;
+
+    @Value("${edu.ubi.medfak.feasibility.dsf.process.distribution.subdic:false}")
+    private boolean subDic;
+
+    @Value("${edu.ubi.medfak.feasibility.dsf.process.request.organization.identifier.value:medizininformatik-initiative.de}")
+    private String requestOrganizationIdentifierValue;
+
+    @Value("${edu.ubi.medfak.feasibility.dsf.process.execute.organization.identifier.value:medizininformatik-initiative.de}")
+    private String executeOrganizationIdentifierValue;
+
+
     @Bean
     public EvaluationSettingsProvider executionSettingsProvider() {
         return new EvaluationSettingsProviderImpl(
@@ -38,7 +51,11 @@ public class EvaluationConfig {
                 obfuscationLaplaceSensitivity,
                 obfuscationLaplaceEpsilon,
                 rateLimitCount,
-                rateLimitTimeIntervalDuration
+                rateLimitTimeIntervalDuration,
+                feasibilityDistribution,
+                requestOrganizationIdentifierValue,
+                executeOrganizationIdentifierValue,
+                subDic
         );
     }
 }

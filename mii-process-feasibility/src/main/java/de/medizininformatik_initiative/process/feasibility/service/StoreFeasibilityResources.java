@@ -15,8 +15,9 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
+import static de.medizininformatik_initiative.process.feasibility.StoreBundleProvider.LIBRARY_URL_PATTERN;
+import static de.medizininformatik_initiative.process.feasibility.StoreBundleProvider.MEASURE_URL_PATTERN;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hl7.fhir.r4.model.Bundle.BundleType.TRANSACTION;
@@ -25,8 +26,6 @@ import static org.hl7.fhir.r4.model.Bundle.HTTPVerb.POST;
 public class StoreFeasibilityResources extends AbstractServiceDelegate implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(StoreFeasibilityResources.class);
-    private static final Pattern MEASURE_URL_PATTERN = Pattern.compile("(.+)/Measure/(.+)");
-    private static final Pattern LIBRARY_URL_PATTERN = Pattern.compile("urn:uuid:(.+)");
 
     private final IGenericClient storeClient;
     private final FeasibilityResourceCleaner cleaner;

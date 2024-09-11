@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  broker-dic-5-bpe-app:
+    image: ghcr.io/datasharingframework/bpe:1.3.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_broker_dic_5_bpe_user.password
+      - db_broker_dic_5_bpe_user_camunda.password
+      - app_client_trust_certificates.pem
+      - app_broker_dic_5_client_certificate.pem
+      - app_broker_dic_5_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker-dic-5/bpe/plugin
+        target: /opt/bpe/plugin
+        read_only: true
+      - type: bind
+        source: ./broker-dic-5/bpe/process
+        target: /opt/bpe/process
+        read_only: true
+      - type: bind
+        source: ./broker-dic-5/bpe/log
+        target: /opt/bpe/log
+      - type: bind
+        source: ./broker-dic-5/bpe/cache
+        target: /opt/bpe/cache
+    ports:
+      - 5005:5005
+    environment:
+      EXTRA_JVM_ARGS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_BPE_DB_USER_PASSWORD_FILE: /run/secrets/db_broker_dic_5_bpe_user.password
+      DEV_DSF_BPE_DB_USER_CAMUNDA_PASSWORD_FILE: /run/secrets/db_broker_dic_5_bpe_user_camunda.password
+      DEV_DSF_BPE_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_dic_5_client_certificate.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_dic_5_client_certificate_private_key.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_BPE_DB_URL: jdbc:postgresql://db/broker_dic_5_bpe
+      DEV_DSF_BPE_DB_USER_GROUP: broker_dic_5_bpe_users
+      DEV_DSF_BPE_DB_USER_USERNAME: broker_dic_5_bpe_server_user
+      DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: broker_dic_5_camunda_users
+      DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: broker_dic_5_camunda_server_user
+      DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://broker-dic-5/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://broker-dic-5-store:8080/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_DISTRIBUTION_SUBDIC: "true"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+    networks:
+      broker-dic-5-bpe-frontend:
+      broker-dic-5-bpe-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      broker-dic-5-fhir-app:
+        condition:  service_healthy
+        restart: true
+      broker-dic-5-store:
+        condition: service_healthy
+        restart: true

@@ -18,9 +18,7 @@ import static de.medizininformatik_initiative.process.feasibility.variables.Cons
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_REPORT;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_REPORT_ID;
 
-public class StoreMeasureReport extends AbstractServiceDelegate implements InitializingBean
-{
-
+public class StoreMeasureReport extends AbstractServiceDelegate implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(StoreMeasureReport.class);
 
     public StoreMeasureReport(ProcessPluginApi api) {
@@ -29,6 +27,8 @@ public class StoreMeasureReport extends AbstractServiceDelegate implements Initi
 
     @Override
     protected void doExecute(DelegateExecution execution, Variables variables) {
+        logger.info("doExecute store measure report");
+
         var task = variables.getStartTask();
 
         MeasureReport measureReport = variables.getResource(VARIABLE_MEASURE_REPORT);

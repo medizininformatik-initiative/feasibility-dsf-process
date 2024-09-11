@@ -2,32 +2,12 @@ package de.medizininformatik_initiative.process.feasibility.spring.config;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
-import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProvider;
-import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProviderImpl;
-import de.medizininformatik_initiative.process.feasibility.EvaluationSettingsProvider;
-import de.medizininformatik_initiative.process.feasibility.FeasibilityCachingLaplaceCountObfuscator;
-import de.medizininformatik_initiative.process.feasibility.FeasibilityProcessPluginDeploymentStateListener;
-import de.medizininformatik_initiative.process.feasibility.Obfuscator;
-import de.medizininformatik_initiative.process.feasibility.RateLimit;
+import de.medizininformatik_initiative.process.feasibility.*;
 import de.medizininformatik_initiative.process.feasibility.client.flare.FlareWebserviceClient;
 import de.medizininformatik_initiative.process.feasibility.client.listener.SetCorrelationKeyListener;
 import de.medizininformatik_initiative.process.feasibility.message.SendDicRequest;
 import de.medizininformatik_initiative.process.feasibility.message.SendDicResponse;
-import de.medizininformatik_initiative.process.feasibility.service.DownloadFeasibilityResources;
-import de.medizininformatik_initiative.process.feasibility.service.DownloadMeasureReport;
-import de.medizininformatik_initiative.process.feasibility.service.EvaluateCqlMeasure;
-import de.medizininformatik_initiative.process.feasibility.service.EvaluateRequestRate;
-import de.medizininformatik_initiative.process.feasibility.service.EvaluateStructuredQueryMeasure;
-import de.medizininformatik_initiative.process.feasibility.service.FeasibilityResourceCleaner;
-import de.medizininformatik_initiative.process.feasibility.service.LogReceiveTimeout;
-import de.medizininformatik_initiative.process.feasibility.service.ObfuscateEvaluationResult;
-import de.medizininformatik_initiative.process.feasibility.service.RateLimitExceededTaskRejecter;
-import de.medizininformatik_initiative.process.feasibility.service.SelectRequestTargets;
-import de.medizininformatik_initiative.process.feasibility.service.SelectResponseTarget;
-import de.medizininformatik_initiative.process.feasibility.service.SetupEvaluationSettings;
-import de.medizininformatik_initiative.process.feasibility.service.StoreFeasibilityResources;
-import de.medizininformatik_initiative.process.feasibility.service.StoreLiveResult;
-import de.medizininformatik_initiative.process.feasibility.service.StoreMeasureReport;
+import de.medizininformatik_initiative.process.feasibility.service.*;
 import dev.dsf.bpe.v1.ProcessPluginApi;
 import dev.dsf.bpe.v1.service.FhirWebserviceClientProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +22,10 @@ public class FeasibilityConfig {
 
     private final IGenericClient storeClient;
 
-    @Autowired private final FhirContext fhirContext;
-    @Autowired private ProcessPluginApi api;
+    @Autowired
+    private final FhirContext fhirContext;
+    @Autowired
+    private ProcessPluginApi api;
 
     private final EvaluationSettingsProvider evaluationSettingsProvider;
     private final FlareWebserviceClient flareWebserviceClient;
@@ -59,7 +41,8 @@ public class FeasibilityConfig {
     }
 
     @Bean
-    public EnhancedFhirWebserviceClientProvider enhancedFhirClientProvider(@Qualifier("clientProvider") FhirWebserviceClientProvider fhirClientProvider) {
+    public EnhancedFhirWebserviceClientProvider enhancedFhirClientProvider(
+            @Qualifier("clientProvider") FhirWebserviceClientProvider fhirClientProvider) {
         return new EnhancedFhirWebserviceClientProviderImpl(fhirClientProvider);
     }
 
@@ -77,13 +60,13 @@ public class FeasibilityConfig {
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public SelectRequestTargets selectRequestTargets() {
-        return new SelectRequestTargets(api);
+        return new SelectRequestTargets(api, evaluationSettingsProvider);
     }
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public SendDicRequest sendDicRequests() {
-        return new SendDicRequest(api);
+        return new SendDicRequest(api, evaluationSettingsProvider.requestOrganizationIdentifierValue());
     }
 
     @Bean
@@ -179,7 +162,7 @@ public class FeasibilityConfig {
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public SendDicResponse sendDicResponse() {
-        return new SendDicResponse(api);
+        return new SendDicResponse(api, evaluationSettingsProvider);
     }
 
     @Bean
@@ -187,5 +170,19 @@ public class FeasibilityConfig {
     public FeasibilityProcessPluginDeploymentStateListener deploymentStateListener() {
         return new FeasibilityProcessPluginDeploymentStateListener(evaluationSettingsProvider.evaluationStrategy(),
                 storeClient, flareWebserviceClient);
+    }
+
+    //feasibilityDistribution
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public StoreFeasibilityResourcesLocally storeFeasibilityResourcesLocally() {
+        return new StoreFeasibilityResourcesLocally(api);
+    }
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public AggregateMeasureReports aggregateMeasureReports() {
+        return new AggregateMeasureReports(api);
     }
 }

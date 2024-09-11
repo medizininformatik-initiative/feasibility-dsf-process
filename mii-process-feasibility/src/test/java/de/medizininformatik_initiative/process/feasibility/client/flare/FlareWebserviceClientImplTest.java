@@ -20,9 +20,7 @@ import java.time.Duration;
 
 import static jakarta.ws.rs.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +31,8 @@ public class FlareWebserviceClientImplTest {
     private HttpClient httpClient;
     private URI flareBaseUrl;
     private FlareWebserviceClient flareWebserviceClient;
-    @Captor ArgumentCaptor<HttpPost> postCaptor;
+    @Captor
+    ArgumentCaptor<HttpPost> postCaptor;
 
     @BeforeEach
     public void setUp() throws URISyntaxException {
@@ -92,7 +91,9 @@ public class FlareWebserviceClientImplTest {
         var config = new FlareWebserviceClientSpringConfig();
         assertDoesNotThrow(() -> {
             return config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                    EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
+                    EvaluationStrategy.STRUCTURED_QUERY, true,
+                    0d, 0d, 0, Duration.ofMillis(1), false,
+                    "medizininformatik-initiative.de", "medizininformatik-initiative.de",false));
         });
     }
 
@@ -101,7 +102,10 @@ public class FlareWebserviceClientImplTest {
         var config = new FlareWebserviceClientSpringConfig();
         var structuredQuery = "foo".getBytes();
         flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
+                EvaluationStrategy.STRUCTURED_QUERY, true, 0d,
+                0d, 0, Duration.ofMillis(1),
+                false, "medizininformatik-initiative.de",
+                "medizininformatik-initiative.de",false));
 
         var e = assertThrows(IllegalArgumentException.class,
                 () -> flareWebserviceClient.requestFeasibility(structuredQuery));
@@ -116,7 +120,8 @@ public class FlareWebserviceClientImplTest {
         var structuredQuery = "foo".getBytes();
         ReflectionTestUtils.setField(config, "flareBaseUrl", invalidUrl);
         flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
+                EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1), false,
+                "medizininformatik-initiative.de", "medizininformatik-initiative.de",false));
 
         var e = assertThrows(IllegalArgumentException.class,
                 () -> flareWebserviceClient.requestFeasibility(structuredQuery));
@@ -131,7 +136,9 @@ public class FlareWebserviceClientImplTest {
         var structuredQuery = "foo".getBytes();
         ReflectionTestUtils.setField(config, "flareBaseUrl", invalidUrl);
         flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.CQL, true, 0d, 0d, 0, Duration.ofMillis(1)));
+                EvaluationStrategy.CQL, true, 0d,
+                0d, 0, Duration.ofMillis(1), false,
+                "medizininformatik-initiative.de", "medizininformatik-initiative.de",false));
 
         var e = assertThrows(IllegalStateException.class,
                 () -> flareWebserviceClient.requestFeasibility(structuredQuery));
@@ -148,8 +155,8 @@ public class FlareWebserviceClientImplTest {
         assertThatThrownBy(() -> {
             flareWebserviceClient.requestFeasibility(structuredQuery);
         })
-            .hasMessage("Error sending %s request to flare webservice url '%s'.", POST,
-                    flareBaseUrl.resolve("/query/execute"))
-            .hasCause(error);
+                .hasMessage("Error sending %s request to flare webservice url '%s'.", POST,
+                        flareBaseUrl.resolve("/query/execute"))
+                .hasCause(error);
     }
 }

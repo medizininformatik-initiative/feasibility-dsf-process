@@ -47,6 +47,12 @@ services:
         ipv4_address: 172.10.0.114
       dic-4-fhir-frontend:
         ipv4_address: 172.10.0.130
+      broker-dic-5-fhir-frontend:
+        ipv4_address: 172.10.0.147
+      broker-dic-6-fhir-frontend:
+        ipv4_address: 172.10.0.163
+      broker-fhir-frontend:
+        ipv4_address: 172.10.0.179
       internet:
         aliases:
         - zars
@@ -54,6 +60,9 @@ services:
         - dic-2
         - dic-3
         - dic-4
+        - broker-dic-5
+        - broker-dic-6
+        - broker
     environment:
       TZ: Europe/Berlin
 
@@ -75,12 +84,17 @@ services:
     - dic-1-fhir-backend
     - dic-2-fhir-backend
     - dic-3-fhir-backend
-    - dic-4-fhir-backend
+    - broker-dic-5-fhir-backend
+    - broker-dic-6-fhir-backend
+    - broker-fhir-backend
     - zars-bpe-backend
     - dic-1-bpe-backend
     - dic-2-bpe-backend
     - dic-3-bpe-backend
     - dic-4-bpe-backend
+    - broker-dic-5-bpe-backend
+    - broker-dic-6-bpe-backend
+    - broker-bpe-backend
     secrets:
     - db_liquibase.password
     volumes:
@@ -209,6 +223,8 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: zars_camunda_users
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: zars_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://zars/fhir
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
     networks:
       zars-bpe-frontend:
       zars-bpe-backend:
@@ -339,6 +355,8 @@ services:
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_FLARE_TIMEOUT_CONNECT: 2000
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: structured-query
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
     networks:
       dic-1-bpe-frontend:
       dic-1-bpe-backend:
@@ -482,7 +500,6 @@ services:
       proxy:
         condition: service_healthy
 
-
   # ---- DIC-2 - BPE ----------------------------------------------------------
   dic-2-bpe-app:
     image: ghcr.io/datasharingframework/bpe:1.3.1
@@ -534,6 +551,8 @@ services:
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://dic-2-store:8080/fhir
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "true"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
     networks:
       dic-2-bpe-frontend:
       dic-2-bpe-backend:
@@ -691,6 +710,8 @@ services:
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: https://dic-3-store-proxy/fhir
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
     networks:
       dic-3-bpe-frontend:
       dic-3-bpe-backend:
@@ -874,6 +895,8 @@ services:
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://dic-4-store:8080/fhir
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
       DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
     networks:
       dic-4-bpe-frontend:
       dic-4-bpe-backend:
@@ -885,6 +908,8 @@ services:
         condition: service_healthy
       dic-4-store-init:
         condition: service_completed_successfully
+
+  #dic-4-bpe-app: todo
 
   # ---- DIC-4 - FHIR Data Store ----------------------------------------------
   dic-4-store:
@@ -952,6 +977,456 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fhir
+
+  # ---- BROKER-DIC-5 - FHIR ---------------------------------------------------------
+  broker-dic-5-fhir-app:
+    image: ghcr.io/datasharingframework/fhir:1.5.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_fhir_broker_dic_5_user.password
+      - db_fhir_broker_dic_5_user_permanent_delete.password
+      - app_client_trust_certificates.pem
+      - app_broker_dic_5_client_certificate.pem
+      - app_broker_dic_5_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker-dic-5/fhir/conf/bundle.xml
+        target: /opt/fhir/conf/bundle.xml
+      - type: bind
+        source: ./broker-dic-5/fhir/log
+        target: /opt/fhir/log
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_FHIR_DB_USER_PASSWORD_FILE: /run/secrets/db_fhir_broker_dic_5_user.password
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_PASSWORD_FILE: /run/secrets/db_fhir_broker_dic_5_user_permanent_delete.password
+      DEV_DSF_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_dic_5_client_certificate.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_dic_5_client_certificate_private_key.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_FHIR_DB_URL: jdbc:postgresql://db/broker_dic_5_fhir
+      DEV_DSF_FHIR_DB_USER_GROUP: broker_dic_5_fhir_users
+      DEV_DSF_FHIR_DB_USER_USERNAME: broker_dic_5_fhir_server_user
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_GROUP: broker_dic_5_fhir_permanent_delete_users
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_USERNAME: broker_dic_5_fhir_server_permanent_delete_user
+      DEV_DSF_FHIR_SERVER_BASE_URL: https://broker-dic-5/fhir
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_IDENTIFIER_VALUE: Test_Broker_DIC_5
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_THUMBPRINT: ${BROKER_DIC_5_USER_THUMBPRINTS}
+      DEV_DSF_FHIR_SERVER_ROLECONFIG: |
+        - webbrowser_test_user:
+            thumbprint: ${WEBBROWSER_TEST_USER_THUMBPRINT}
+            token-role: admin
+            dsf-role:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+              - SEARCH
+              - HISTORY
+              - PERMANENT_DELETE
+    networks:
+      broker-dic-5-fhir-frontend:
+        ipv4_address: 172.10.0.148
+      broker-dic-5-fhir-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy
+
+  # ---- BROKER-DIC-5 - BPE ---------------------------------------------------------- todo
+  broker-dic-5-bpe-app:
+    image: ghcr.io/datasharingframework/bpe:1.3.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_broker_dic_5_bpe_user.password
+      - db_broker_dic_5_bpe_user_camunda.password
+      - app_client_trust_certificates.pem
+      - app_broker_dic_5_client_certificate.pem
+      - app_broker_dic_5_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker-dic-5/bpe/plugin
+        target: /opt/bpe/plugin
+        read_only: true
+      - type: bind
+        source: ./broker-dic-5/bpe/process
+        target: /opt/bpe/process
+        read_only: true
+      - type: bind
+        source: ./broker-dic-5/bpe/log
+        target: /opt/bpe/log
+      - type: bind
+        source: ./broker-dic-5/bpe/cache
+        target: /opt/bpe/cache
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_BPE_DB_USER_PASSWORD_FILE: /run/secrets/db_broker_dic_5_bpe_user.password
+      DEV_DSF_BPE_DB_USER_CAMUNDA_PASSWORD_FILE: /run/secrets/db_broker_dic_5_bpe_user_camunda.password
+      DEV_DSF_BPE_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_dic_5_client_certificate.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_dic_5_client_certificate_private_key.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_BPE_DB_URL: jdbc:postgresql://db/broker_dic_5_bpe
+      DEV_DSF_BPE_DB_USER_GROUP: broker_dic_5_bpe_users
+      DEV_DSF_BPE_DB_USER_USERNAME: broker_dic_5_bpe_server_user
+      DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: broker_dic_5_camunda_users
+      DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: broker_dic_5_camunda_server_user
+      DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://broker-dic-5/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://broker-dic-5-store:8080/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_DISTRIBUTION_SUBDIC: "true"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+    networks:
+      broker-dic-5-bpe-frontend:
+      broker-dic-5-bpe-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      broker-dic-5-fhir-app:
+        condition:  service_healthy
+        restart: true
+      broker-dic-5-store:
+        condition: service_healthy
+        restart: true
+
+  # ---- BROKER-DIC-5 - FHIR Data Store ----------------------------------------------
+  broker-dic-5-store:
+    image: samply/blaze:0.24
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    ports:
+      - "8085:8080"
+    environment:
+      BASE_URL: http://127.0.0.1:8085
+      LOG_LEVEL: debug
+    networks:
+      broker-dic-5-bpe-backend:
+        aliases:
+          - broker-dic-5-store
+    volumes:
+      - type: volume
+        source: broker-dic-5-store-data
+        target: /app/data
+
+  # ---- BROKER-DIC-6 - FHIR ---------------------------------------------------------
+  broker-dic-6-fhir-app:
+    image: ghcr.io/datasharingframework/fhir:1.5.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_fhir_broker_dic_6_user.password
+      - db_fhir_broker_dic_6_user_permanent_delete.password
+      - app_client_trust_certificates.pem
+      - app_broker_dic_6_client_certificate.pem
+      - app_broker_dic_6_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker-dic-6/fhir/conf/bundle.xml
+        target: /opt/fhir/conf/bundle.xml
+      - type: bind
+        source: ./broker-dic-6/fhir/log
+        target: /opt/fhir/log
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_FHIR_DB_USER_PASSWORD_FILE: /run/secrets/db_fhir_broker_dic_6_user.password
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_PASSWORD_FILE: /run/secrets/db_fhir_broker_dic_6_user_permanent_delete.password
+      DEV_DSF_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_dic_6_client_certificate.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_dic_6_client_certificate_private_key.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_FHIR_DB_URL: jdbc:postgresql://db/broker_dic_6_fhir
+      DEV_DSF_FHIR_DB_USER_GROUP: broker_dic_6_fhir_users
+      DEV_DSF_FHIR_DB_USER_USERNAME: broker_dic_6_fhir_server_user
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_GROUP: broker_dic_6_fhir_permanent_delete_users
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_USERNAME: broker_dic_6_fhir_server_permanent_delete_user
+      DEV_DSF_FHIR_SERVER_BASE_URL: https://broker-dic-6/fhir
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_IDENTIFIER_VALUE: Test_Broker_DIC_6
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_THUMBPRINT: ${BROKER_DIC_6_USER_THUMBPRINTS}
+      DEV_DSF_FHIR_SERVER_ROLECONFIG: |
+        - webbrowser_test_user:
+            thumbprint: ${WEBBROWSER_TEST_USER_THUMBPRINT}
+            token-role: admin
+            dsf-role:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+              - SEARCH
+              - HISTORY
+              - PERMANENT_DELETE
+    networks:
+      broker-dic-6-fhir-frontend:
+        ipv4_address: 172.10.0.164
+      dic-2-fhir-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy
+
+  # ---- BROKER-DIC-6 - BPE ---------------------------------------------------------- todo
+  broker-dic-6-bpe-app:
+    image: ghcr.io/datasharingframework/bpe:1.3.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_broker_dic_6_bpe_user.password
+      - db_broker_dic_6_bpe_user_camunda.password
+      - app_client_trust_certificates.pem
+      - app_broker_dic_6_client_certificate.pem
+      - app_broker_dic_6_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker-dic-6/bpe/plugin
+        target: /opt/bpe/plugin
+        read_only: true
+      - type: bind
+        source: ./broker-dic-6/bpe/process
+        target: /opt/bpe/process
+        read_only: true
+      - type: bind
+        source: ./broker-dic-6/bpe/log
+        target: /opt/bpe/log
+      - type: bind
+        source: ./broker-dic-6/bpe/cache
+        target: /opt/bpe/cache
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_BPE_DB_USER_PASSWORD_FILE: /run/secrets/db_broker_dic_6_bpe_user.password
+      DEV_DSF_BPE_DB_USER_CAMUNDA_PASSWORD_FILE: /run/secrets/db_broker_dic_6_bpe_user_camunda.password
+      DEV_DSF_BPE_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_dic_6_client_certificate.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_dic_6_client_certificate_private_key.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_BPE_DB_URL: jdbc:postgresql://db/broker_dic_6_bpe
+      DEV_DSF_BPE_DB_USER_GROUP: broker_dic_6_bpe_users
+      DEV_DSF_BPE_DB_USER_USERNAME: broker_dic_6_bpe_server_user
+      DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: broker_dic_6_camunda_users
+      DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: broker_dic_6_camunda_server_user
+      DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://broker-dic-6/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://broker-dic-6-store:8080/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_DISTRIBUTION_SUBDIC: "true"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+    networks:
+      broker-dic-6-bpe-frontend:
+      broker-dic-6-bpe-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      broker-dic-6-fhir-app:
+        condition:  service_healthy
+        restart: true
+      broker-dic-6-store:
+        condition: service_healthy
+        restart: true
+
+  # ---- BROKER-DIC-6 - FHIR Data Store ----------------------------------------------
+  broker-dic-6-store:
+    image: samply/blaze:0.24
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    ports:
+     - "8086:8080"
+    environment:
+      BASE_URL: http://127.0.0.1:8086
+      LOG_LEVEL: debug
+    networks:
+      broker-dic-6-bpe-backend:
+        aliases:
+          - broker-dic-6-store
+    volumes:
+      - type: volume
+        source: broker-dic-6-store-data
+        target: /app/data
+
+
+  # ---- BROKER - FHIR ---------------------------------------------------------
+  broker-fhir-app:
+    image: ghcr.io/datasharingframework/fhir:1.3.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_fhir_broker_user.password
+      - db_fhir_broker_user_permanent_delete.password
+      - app_client_trust_certificates.pem
+      - app_broker_client_certificate.pem
+      - app_broker_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker/fhir/conf/bundle.xml
+        target: /opt/fhir/conf/bundle.xml
+      - type: bind
+        source: ./broker/fhir/log
+        target: /opt/fhir/log
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_FHIR_DB_USER_PASSWORD_FILE: /run/secrets/db_fhir_broker_user.password
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_PASSWORD_FILE: /run/secrets/db_fhir_broker_user_permanent_delete.password
+      DEV_DSF_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_client_certificate.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_client_certificate_private_key.pem
+      DEV_DSF_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_FHIR_DB_URL: jdbc:postgresql://db/broker_fhir
+      DEV_DSF_FHIR_DB_USER_GROUP: broker_fhir_users
+      DEV_DSF_FHIR_DB_USER_USERNAME: broker_fhir_server_user
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_GROUP: broker_fhir_permanent_delete_users
+      DEV_DSF_FHIR_DB_USER_PERMANENT_DELETE_USERNAME: broker_fhir_server_permanent_delete_user
+      DEV_DSF_FHIR_SERVER_BASE_URL: https://broker/fhir
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_IDENTIFIER_VALUE: Test_Broker
+      DEV_DSF_FHIR_SERVER_ORGANIZATION_THUMBPRINT: ${BROKER_USER_THUMBPRINTS}
+      DEV_DSF_FHIR_SERVER_ROLECONFIG: |
+        - webbrowser_test_user:
+            thumbprint: ${WEBBROWSER_TEST_USER_THUMBPRINT}
+            token-role: admin
+            dsf-role:
+              - CREATE
+              - READ
+              - UPDATE
+              - DELETE
+              - SEARCH
+              - HISTORY
+              - PERMANENT_DELETE
+              - WEBSOCKET
+            practitioner-role:
+              - http://dsf.dev/fhir/CodeSystem/practitioner-role|DSF_ADMIN
+    networks:
+      broker-fhir-frontend:
+        ipv4_address: 172.10.0.180
+      broker-fhir-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      proxy:
+        condition: service_healthy
+
+  # ---- BROKER - BPE ---------------------------------------------------------- todo
+  broker-bpe-app:
+    image: ghcr.io/datasharingframework/bpe:1.3.1
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "./healthcheck.sh" ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+    secrets:
+      - db_liquibase.password
+      - db_broker_bpe_user.password
+      - db_broker_bpe_user_camunda.password
+      - app_client_trust_certificates.pem
+      - app_broker_client_certificate.pem
+      - app_broker_client_certificate_private_key.pem
+      - app_client_certificate_private_key.pem.password
+    volumes:
+      - type: bind
+        source: ./broker/bpe/plugin
+        target: /opt/bpe/plugin
+        read_only: true
+      - type: bind
+        source: ./broker/bpe/process
+        target: /opt/bpe/process
+        read_only: true
+      - type: bind
+        source: ./broker/bpe/log
+        target: /opt/bpe/log
+      - type: bind
+        source: ./broker/bpe/cache
+        target: /opt/bpe/cache
+    environment:
+      TZ: Europe/Berlin
+      DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
+      DEV_DSF_BPE_DB_USER_PASSWORD_FILE: /run/secrets/db_broker_bpe_user.password
+      DEV_DSF_BPE_DB_USER_CAMUNDA_PASSWORD_FILE: /run/secrets/db_broker_bpe_user_camunda.password
+      DEV_DSF_BPE_FHIR_CLIENT_TRUST_SERVER_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE: /run/secrets/app_broker_client_certificate.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY: /run/secrets/app_broker_client_certificate_private_key.pem
+      DEV_DSF_BPE_FHIR_CLIENT_CERTIFICATE_PRIVATE_KEY_PASSWORD_FILE: /run/secrets/app_client_certificate_private_key.pem.password
+      DEV_DSF_BPE_DB_URL: jdbc:postgresql://db/broker_bpe
+      DEV_DSF_BPE_DB_USER_GROUP: broker_bpe_users
+      DEV_DSF_BPE_DB_USER_USERNAME: broker_bpe_server_user
+      DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: broker_camunda_users
+      DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: broker_camunda_server_user
+      DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://broker/fhir
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "true"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_DISTRIBUTION: true
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_EXECUTE_ORGANIZATION_IDENTIFIER_VALUE: "medizininformatik-initiative.de"
+      EDU_UBI_MEDFAK_FEASIBILITY_DSF_PROCESS_REQUEST_ORGANIZATION_IDENTIFIER_VALUE: "distributed-org.de"
+    networks:
+      broker-bpe-frontend:
+      broker-bpe-backend:
+      internet:
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      broker-fhir-app:
+        condition:  service_healthy
+        restart: true
+
 
 secrets:
   proxy_certificate_and_int_cas.pem:
@@ -1043,6 +1518,45 @@ secrets:
   db_fhir_dic_4_user_permanent_delete.password:
     file: ./secrets/db_fhir_dic_4_user_permanent_delete.password
 
+  db_broker_dic_5_bpe_user.password:
+    file: secrets/db_broker_dic_5_bpe_user.password
+  db_broker_dic_5_bpe_user_camunda.password:
+    file: secrets/db_broker_dic_5_bpe_user_camunda.password
+  app_broker_dic_5_client_certificate.pem:
+    file: ./secrets/app_broker_dic_5_client_certificate.pem
+  app_broker_dic_5_client_certificate_private_key.pem:
+    file: ./secrets/app_broker_dic_5_client_certificate_private_key.pem
+  db_fhir_broker_dic_5_user.password:
+    file: ./secrets/db_fhir_broker_dic_5_user.password
+  db_fhir_broker_dic_5_user_permanent_delete.password:
+    file: ./secrets/db_fhir_broker_dic_5_user_permanent_delete.password
+
+  db_broker_dic_6_bpe_user.password:
+    file: secrets/db_broker_dic_6_bpe_user.password
+  db_broker_dic_6_bpe_user_camunda.password:
+    file: secrets/db_broker_dic_6_bpe_user_camunda.password
+  app_broker_dic_6_client_certificate.pem:
+    file: ./secrets/app_broker_dic_6_client_certificate.pem
+  app_broker_dic_6_client_certificate_private_key.pem:
+    file: ./secrets/app_broker_dic_6_client_certificate_private_key.pem
+  db_fhir_broker_dic_6_user.password:
+    file: ./secrets/db_fhir_broker_dic_6_user.password
+  db_fhir_broker_dic_6_user_permanent_delete.password:
+    file: ./secrets/db_fhir_broker_dic_6_user_permanent_delete.password
+
+  db_broker_bpe_user.password:
+    file: secrets/db_broker_bpe_user.password
+  db_broker_bpe_user_camunda.password:
+    file: secrets/db_broker_bpe_user_camunda.password
+  app_broker_client_certificate.pem:
+    file: ./secrets/app_broker_client_certificate.pem
+  app_broker_client_certificate_private_key.pem:
+    file: ./secrets/app_broker_client_certificate_private_key.pem
+  db_fhir_broker_user.password:
+    file: ./secrets/db_fhir_broker_user.password
+  db_fhir_broker_user_permanent_delete.password:
+    file: ./secrets/db_fhir_broker_user_permanent_delete.password
+
 networks:
   internet:
   zars-fhir-frontend:
@@ -1054,6 +1568,7 @@ networks:
   zars-fhir-backend:
   zars-bpe-frontend:
   zars-bpe-backend:
+
   dic-1-fhir-frontend:
     driver: bridge
     ipam:
@@ -1063,6 +1578,7 @@ networks:
   dic-1-fhir-backend:
   dic-1-bpe-frontend:
   dic-1-bpe-backend:
+
   dic-2-fhir-frontend:
     driver: bridge
     ipam:
@@ -1072,6 +1588,7 @@ networks:
   dic-2-fhir-backend:
   dic-2-bpe-frontend:
   dic-2-bpe-backend:
+
   dic-3-fhir-frontend:
     driver: bridge
     ipam:
@@ -1081,6 +1598,7 @@ networks:
   dic-3-fhir-backend:
   dic-3-bpe-frontend:
   dic-3-bpe-backend:
+
   dic-4-fhir-frontend:
     driver: bridge
     ipam:
@@ -1090,6 +1608,37 @@ networks:
   dic-4-fhir-backend:
   dic-4-bpe-frontend:
   dic-4-bpe-backend:
+
+  broker-dic-5-fhir-frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.0.144/28
+  broker-dic-5-fhir-backend:
+  broker-dic-5-bpe-frontend:
+  broker-dic-5-bpe-backend:
+
+  broker-dic-6-fhir-frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.0.160/28
+  broker-dic-6-fhir-backend:
+  broker-dic-6-bpe-frontend:
+  broker-dic-6-bpe-backend:
+
+  broker-fhir-frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.0.176/28
+  broker-fhir-backend:
+  broker-bpe-frontend:
+  broker-bpe-backend:
+
 
 volumes:
   hapi-curl-binary:
@@ -1106,6 +1655,15 @@ volumes:
 
   dic-4-store-data:
     name: "dic-4-store-data"
+
+  broker-dic-5-store-data:
+    name: "broker-dic-5-store-data"
+
+  broker-dic-6-store-data:
+    name: "broker-dic-6-store-data"
+
+#  broker-store-data:
+#    name: "broker-store-data"
 
   db-data:
     name: "db-data-mii-dsf-process-feasibility"

@@ -35,17 +35,46 @@ public interface EvaluationSettingsProvider {
      */
 
     double resultObfuscationLaplaceEpsilon();
+
     /**
      * Provides the user specified maximum number of request allowed for the given time interval
      *
      * @return maximum number of allowed requests (>= 0)
      */
-    public Integer getRateLimitCount();
+    Integer getRateLimitCount();
 
     /**
      * Provides the time interval duration in which the request rate limit is evaluated
      *
      * @return time duration of rate limit interval
      */
-    public Duration getRateLimitTimeIntervalDuration();
+    Duration getRateLimitTimeIntervalDuration();
+
+    /**
+     * Returns whether feasibility Distribution is enabled.
+     *
+     * @return True if feasibility Distribution is enabled and false otherwise.
+     */
+    boolean feasibilityDistributionEnabled();
+
+    /**
+     * Returns the set request organization identifier value (default: "medizininformatik-initiative.de")
+     *
+     * @return the set organization identifier value
+     */
+    String requestOrganizationIdentifierValue();
+
+    /**
+     * Returns the set execute organization identifier value (default: "medizininformatik-initiative.de")
+     *
+     * @return the set organization identifier value
+     */
+    String executeOrganizationIdentifierValue();
+
+    /**
+     * Returns whether this instance is a Sub-DIC
+     *
+     * @return True if this instance is a Sub-DIC
+     */
+    boolean subDic();
 }

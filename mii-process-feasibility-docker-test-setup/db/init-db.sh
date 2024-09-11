@@ -22,4 +22,16 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT ALL PRIVILEGES ON DATABASE dic_4_fhir TO liquibase_user;
     CREATE DATABASE dic_4_bpe;
     GRANT ALL PRIVILEGES ON DATABASE dic_4_bpe TO liquibase_user;
+    CREATE DATABASE broker_dic_5_fhir;
+    GRANT ALL PRIVILEGES ON DATABASE broker_dic_5_fhir TO liquibase_user;
+    CREATE DATABASE broker_dic_5_bpe;
+    GRANT ALL PRIVILEGES ON DATABASE broker_dic_5_bpe TO liquibase_user;
+    CREATE DATABASE broker_dic_6_fhir;
+    GRANT ALL PRIVILEGES ON DATABASE broker_dic_6_fhir TO liquibase_user;
+    CREATE DATABASE broker_dic_6_bpe;
+    GRANT ALL PRIVILEGES ON DATABASE broker_dic_6_bpe TO liquibase_user;
+    CREATE DATABASE broker_fhir;
+    GRANT ALL PRIVILEGES ON DATABASE broker_fhir TO liquibase_user;
+    CREATE DATABASE broker_bpe;
+    GRANT ALL PRIVILEGES ON DATABASE broker_bpe TO liquibase_user;
 EOSQL

@@ -1,0 +1,498 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [ {
+    "fullUrl": "Patient/Polar-WP-Mix-015",
+    "resource": {
+      "resourceType": "Patient",
+      "id": "Polar-WP-Mix-015",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-person/StructureDefinition/Patient" ]
+      },
+      "identifier": [ {
+        "use": "usual",
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "MR"
+          } ]
+        },
+        "system": "https://POLARWPMIX.de/pid",
+        "value": "Polar-WP-Mix-015"
+      } ],
+      "name": [ {
+        "use": "official",
+        "family": "Mustermann",
+        "given": [ "Henry_08_WP1.3" ]
+      } ],
+      "gender": "male",
+      "birthDate": "1964-01-01",
+      "address": [ {
+        "type": "both",
+        "line": [ "Musterstraße 1" ],
+        "city": "Bonn",
+        "postalCode": "53121",
+        "country": "DE"
+      } ],
+      "generalPractitioner": [ {
+        "display": "AOK"
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/Polar-WP-Mix-015"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-015-E-1",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-015-E-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "VN"
+          } ]
+        },
+        "_system": {
+          "extension": [ {
+            "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+            "valueCode": "unknown"
+          } ]
+        },
+        "value": "Polar-WP-Mix-015-E-1",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "IMP",
+        "display": "inpatient encounter"
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "einrichtungskontakt",
+          "display": "Einrichtungskontakt"
+        } ]
+      } ],
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "period": {
+        "start": "2019-11-11T00:00:00+01:00",
+        "end": "2019-11-29T00:00:00+01:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "_reference": {
+            "extension": [ {
+              "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+              "valueCode": "unknown"
+            } ]
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-015-E-1"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-015-E-1-A-1",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-015-E-1-A-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "status": "finished",
+      "class": {
+        "extension": [ {
+          "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+          "valueCode": "unknown"
+        } ]
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "abteilungskontakt",
+          "display": "Abteilungskontakt"
+        } ]
+      } ],
+      "serviceType": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel",
+          "code": "1600",
+          "display": "Unfallchirurgie"
+        } ]
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "period": {
+        "start": "2019-11-11T00:00:00+01:00",
+        "end": "2019-11-29T00:00:00+01:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "_reference": {
+            "extension": [ {
+              "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+              "valueCode": "unknown"
+            } ]
+          }
+        }
+      } ],
+      "partOf": {
+        "reference": "Encounter/Polar-WP-Mix-015-E-1"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-015-E-1-A-1"
+    }
+  }, {
+    "fullUrl": "Observation/Polar-WP-Mix-015-E-1-OL-1",
+    "resource": {
+      "resourceType": "Observation",
+      "id": "Polar-WP-Mix-015-E-1-OL-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-labor/StructureDefinition/ObservationLab" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "OBI"
+          } ]
+        },
+        "system": "https://POLARWPMIX.de/befund",
+        "value": "Polar-WP-Mix-015-E-1-OL-1",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "final",
+      "category": [ {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+          "code": "laboratory",
+          "display": "Laboratory"
+        }, {
+          "system": "http://loinc.org",
+          "code": "26436-6",
+          "display": "Laboratory studies (set)"
+        } ]
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://loinc.org",
+          "code": "33558-8"
+        } ],
+        "text": "CrCl"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "encounter": {
+        "reference": "Encounter/Polar-WP-Mix-015-E-1"
+      },
+      "effectiveDateTime": "2019-11-10T00:00:00+01:00",
+      "valueQuantity": {
+        "value": 188,
+        "unit": "milliliter per minute",
+        "system": "http://unitsofmeasure.org",
+        "code": "mL/min"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Observation/Polar-WP-Mix-015-E-1-OL-1"
+    }
+  }, {
+    "fullUrl": "Observation/Polar-WP-Mix-015-E-1-OL-2",
+    "resource": {
+      "resourceType": "Observation",
+      "id": "Polar-WP-Mix-015-E-1-OL-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-labor/StructureDefinition/ObservationLab" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "OBI"
+          } ]
+        },
+        "system": "https://POLARWPMIX.de/befund",
+        "value": "Polar-WP-Mix-015-E-1-OL-2",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "final",
+      "category": [ {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+          "code": "laboratory",
+          "display": "Laboratory"
+        }, {
+          "system": "http://loinc.org",
+          "code": "26436-6",
+          "display": "Laboratory studies (set)"
+        } ]
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://loinc.org",
+          "code": "33558-8"
+        } ],
+        "text": "CrCl"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "encounter": {
+        "reference": "Encounter/Polar-WP-Mix-015-E-1"
+      },
+      "effectiveDateTime": "2019-11-11T00:00:00+01:00",
+      "valueQuantity": {
+        "value": 125.3,
+        "unit": "milliliter per minute",
+        "system": "http://unitsofmeasure.org",
+        "code": "mL/min"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Observation/Polar-WP-Mix-015-E-1-OL-2"
+    }
+  }, {
+    "fullUrl": "Observation/Polar-WP-Mix-015-E-1-OL-3",
+    "resource": {
+      "resourceType": "Observation",
+      "id": "Polar-WP-Mix-015-E-1-OL-3",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-labor/StructureDefinition/ObservationLab" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "OBI"
+          } ]
+        },
+        "system": "https://POLARWPMIX.de/befund",
+        "value": "Polar-WP-Mix-015-E-1-OL-3",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "final",
+      "category": [ {
+        "coding": [ {
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+          "code": "laboratory",
+          "display": "Laboratory"
+        }, {
+          "system": "http://loinc.org",
+          "code": "26436-6",
+          "display": "Laboratory studies (set)"
+        } ]
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://loinc.org",
+          "code": "33558-8"
+        } ],
+        "text": "CrCl"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "encounter": {
+        "reference": "Encounter/Polar-WP-Mix-015-E-1"
+      },
+      "effectiveDateTime": "2019-11-12T00:00:00+01:00",
+      "valueQuantity": {
+        "value": 67.9,
+        "_unit": {
+          "extension": [ {
+            "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+            "valueCode": "unknown"
+          } ]
+        },
+        "system": "http://unitsofmeasure.org",
+        "_code": {
+          "extension": [ {
+            "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+            "valueCode": "unknown"
+          } ]
+        }
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Observation/Polar-WP-Mix-015-E-1-OL-3"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-754689357",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-754689357",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-754689357"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "C01BD07",
+          "userSelected": true
+        } ],
+        "text": "ATC_DRONEDARON"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 14,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-754689357"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-015-MS-1",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-015-MS-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-754689357"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "effectiveDateTime": "2019-11-11T00:00:00+01:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-015-MS-1"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-015-MS-2",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-015-MS-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-754689357"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "effectiveDateTime": "2019-11-11T00:00:00+01:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-015-MS-2"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-015-MS-3",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-015-MS-3",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-754689357"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-015"
+      },
+      "effectiveDateTime": "2019-11-11T00:00:00+01:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-015-MS-3"
+    }
+  } ]
+}

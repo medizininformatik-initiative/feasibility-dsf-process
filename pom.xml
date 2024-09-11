@@ -16,8 +16,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <compileSource>17</compileSource>
         <compileTarget>17</compileTarget>
+        <hapi.fhir.version>5.2.1</hapi.fhir.version>
         <dsf.version>1.5.1</dsf.version>
-        <hapi.fhir.version>5.1.0</hapi.fhir.version>
         <testcontainers.version>1.19.8</testcontainers.version>
     </properties>
 
@@ -28,7 +28,8 @@
 
     <scm>
         <connection>scm:git:git://github.com/nmedizininformatik-initiative/mii-process-feasibility.git</connection>
-        <developerConnection>scm:git:git@github.com:medizininformatik-initiative/mii-process-feasibility.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:medizininformatik-initiative/mii-process-feasibility.git
+        </developerConnection>
         <url>https://github.com/medizininformatik-initiative/mii-process-feasibility</url>
     </scm>
 
@@ -240,6 +241,55 @@
                             </includes>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
+
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker-dic-5/fhir/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker-dic-5/bpe/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker-dic-6/fhir/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker-dic-6/bpe/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker/fhir/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>mii-process-feasibility-docker-test-setup/broker/bpe/app/log</directory>
+                            <includes>
+                                <include>*.log</include>
+                                <include>*.log.gz</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>
@@ -262,6 +312,28 @@
             <id>highmed-dsf</id>
             <name>GitHub HiGHmed Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/highmed/highmed-dsf</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github-mii</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/medizininformatik-initiative</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>dsf-dev</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/datasharingframework/dsf</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

@@ -91,7 +91,7 @@
             "http://medizininformatik-initiative.de/fhir/StructureDefinition/feasibility-measure"
           ]
         },
-        "url": "https://zars/Measure/7a142223-616f-41a1-97da-2ae726031b71",
+        "url": "https://zars/fhir/Measure/7a142223-616f-41a1-97da-2ae726031b71",
         "status": "active",
         "library": [
           "urn:uuid:30561ba6-106f-4d52-bb8d-e49e20a40d40"

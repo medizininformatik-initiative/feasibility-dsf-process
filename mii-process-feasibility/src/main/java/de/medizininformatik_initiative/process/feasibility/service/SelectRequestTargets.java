@@ -1,16 +1,12 @@
 package de.medizininformatik_initiative.process.feasibility.service;
 
+import de.medizininformatik_initiative.process.feasibility.EvaluationSettingsProvider;
 import dev.dsf.bpe.v1.ProcessPluginApi;
 import dev.dsf.bpe.v1.activity.AbstractServiceDelegate;
 import dev.dsf.bpe.v1.variables.Target;
 import dev.dsf.bpe.v1.variables.Variables;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
-import org.hl7.fhir.r4.model.Coding;
-import org.hl7.fhir.r4.model.Endpoint;
-import org.hl7.fhir.r4.model.Identifier;
-import org.hl7.fhir.r4.model.Organization;
-import org.hl7.fhir.r4.model.Reference;
-import org.hl7.fhir.r4.model.Task;
+import org.hl7.fhir.r4.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,22 +20,28 @@ import static de.medizininformatik_initiative.process.feasibility.variables.Cons
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.CODESYSTEM_FEASIBILITY_VALUE_MEASURE_REFERENCE;
 import static dev.dsf.common.auth.conf.Identity.ORGANIZATION_IDENTIFIER_SYSTEM;
 
+// TODO Überladen
 public class SelectRequestTargets extends AbstractServiceDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(SelectRequestTargets.class);
+    private final EvaluationSettingsProvider evaluationSettingsProvider;
 
-    public SelectRequestTargets(ProcessPluginApi api) {
+    public SelectRequestTargets(ProcessPluginApi api, EvaluationSettingsProvider evaluationSettingsProvider) {
         super(api);
+        this.evaluationSettingsProvider = evaluationSettingsProvider;
     }
 
     @Override
     protected void doExecute(DelegateExecution execution, Variables variables) {
+        logger.info("doExecute select request targets");
 
         var organizationProvider = api.getOrganizationProvider();
+
         var client = api.getFhirWebserviceClientProvider().getLocalWebserviceClient();
         var parentIdentifier = new Identifier()
                 .setSystem(ORGANIZATION_IDENTIFIER_SYSTEM)
-                .setValue("medizininformatik-initiative.de");
+                .setValue(this.evaluationSettingsProvider.requestOrganizationIdentifierValue());
+
         var memberOrganizationRole = new Coding()
                 .setSystem("http://dsf.dev/fhir/CodeSystem/organization-role")
                 .setCode("DIC");
@@ -58,8 +60,15 @@ public class SelectRequestTargets extends AbstractServiceDelegate {
                             UUID.randomUUID().toString());
                 })
                 .collect(Collectors.toList());
-        targets.forEach(t -> logger.debug(t.getOrganizationIdentifierValue()));
+
+        targets.forEach(t -> logger.info("SelectRequestTargets: " + t.getOrganizationIdentifierValue() +
+                "\n EndpointUrl: " + t.getEndpointUrl() +
+                "\n OrganizationIdentifierValue: " + t.getOrganizationIdentifierValue() +
+                "\n EndpointIdentifierValue: " + t.getEndpointIdentifierValue() +
+                "\n CorrelationKey: " + t.getCorrelationKey()));
+
         variables.setTargets(variables.createTargets(targets));
+
         variables.setString("measure-id",
                 api.getFhirWebserviceClientProvider().getLocalWebserviceClient().getBaseUrl()
                         + getMeasureId(variables.getStartTask()));

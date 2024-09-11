@@ -53,9 +53,10 @@ public class CertificateGenerator {
 
     private static final char[] CERT_PASSWORD = "password".toCharArray();
 
-    private static final String[] SERVER_COMMON_NAMES = {"localhost", "dic-1", "dic-2", "dic-3", "dic-4", "zars"};
+    private static final String[] SERVER_COMMON_NAMES = {"localhost", "dic-1", "dic-2", "dic-3", "dic-4", "broker-dic-5",
+            "broker-dic-6", "broker", "zars"};
     private static final String[] CLIENT_COMMON_NAMES = {"dic-1-client", "dic-2-client", "dic-3-client", "dic-4-client",
-            "zars-client", "Webbrowser Test User"};
+            "broker-dic-5-client", "broker-dic-6-client", "broker-client", "zars-client", "Webbrowser Test User"};
 
     private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
 
@@ -128,7 +129,8 @@ public class CertificateGenerator {
             logger.info("Initializing CA with new cert file: {}, private key {}", caCertFile,
                     caPrivateKeyFile);
 
-            CertificateAuthority ca = CertificateAuthorityBuilder.create("DE", null, null, null, null, "Test")
+            CertificateAuthority ca = CertificateAuthorityBuilder.create("DE", null, null,
+                            null, null, "Test")
                     .initialize();
 
             writeCertificate(caCertFile, ca.getCertificate());
@@ -251,7 +253,9 @@ public class CertificateGenerator {
     }
 
     private JcaPKCS10CertificationRequest createOrReadCertificateRequest(Path certificateRequestFile,
-                                                                         CertificateType certificateType, KeyPair keyPair, String commonName, List<String> dnsNames) {
+                                                                         CertificateType certificateType,
+                                                                         KeyPair keyPair, String commonName,
+                                                                         List<String> dnsNames) {
         if (!dnsNames.contains(commonName) && CertificateType.SERVER.equals(certificateType))
             throw new IllegalArgumentException("dnsNames must contain commonName if certificateType is SERVER");
 
@@ -260,7 +264,8 @@ public class CertificateGenerator {
                     commonName);
             return readCertificateRequest(certificateRequestFile);
         } else {
-            X500Name subject = CertificationRequestBuilder.createSubject("DE", null, null, null, null, commonName);
+            X500Name subject = CertificationRequestBuilder.createSubject("DE", null, null,
+                    null, null, commonName);
             JcaPKCS10CertificationRequest certificateRequest = createCertificateRequest(certificateType, subject,
                     keyPair, dnsNames);
 
@@ -408,7 +413,8 @@ public class CertificateGenerator {
     private void copyDockerTestClientCertFiles(String folder, String commonName) {
         final CertificateFiles clientCertFiles = clientCertificateFilesByCommonName.get(commonName);
 
-        Path bpeClientCertificateFile = Paths.get(folder, "app_" + commonName.replace('-', '_') + "_certificate.pem");
+        Path bpeClientCertificateFile = Paths.get(folder, "app_" + commonName.replace('-', '_')
+                + "_certificate.pem");
         logger.info("Copying {} certificate certificate file to {}", commonName, bpeClientCertificateFile);
         writeCertificate(bpeClientCertificateFile, clientCertFiles.certificate);
 

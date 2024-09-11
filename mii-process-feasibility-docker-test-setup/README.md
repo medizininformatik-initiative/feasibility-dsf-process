@@ -128,6 +128,52 @@ environment:
   EXTRA_JVM_ARGS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
 ```
 
+Quick restart of the debugging stack:
+```sh
+docker-compose down -v 
+
+docker-compose up -d zars-fhir-app 
+sleep 3
+
+docker-compose up -d zars-bpe-app 
+sleep 2
+
+docker-compose up -d dic-2-fhir-app 
+sleep 3
+
+docker-compose up -d dic-2-bpe-app 
+```
+
+Start Debugging 'remote dic_2_bpe debugging'
+
+After that we can POST the first Task to the ZARS:
+
+```sh
+curl \
+  --cacert ../mii-process-feasibility-tools/mii-process-feasibility-test-data-generator/cert/ca/testca_certificate.pem \
+  --cert-type P12 \
+  --cert ../mii-process-feasibility-tools/mii-process-feasibility-test-data-generator/cert/Webbrowser_Test_User/Webbrowser_Test_User_certificate.p12:password \
+  -H accept:application/fhir+json \
+  -H content-type:application/fhir+json \
+  -d @data/feasibility-bundle.json \
+  -s https://zars/fhir/ |\
+  jq .
+```
+
+After exporting the Task ID to $TASK_ID, you can fetch the task:
+
+```sh
+curl \
+  --cacert ../mii-process-feasibility-tools/mii-process-feasibility-test-data-generator/cert/ca/testca_certificate.pem \
+  --cert-type P12 \
+  --cert ../mii-process-feasibility-tools/mii-process-feasibility-test-data-generator/cert/Webbrowser_Test_User/Webbrowser_Test_User_certificate.p12:password \
+  -H accept:application/fhir+json \
+  -s "https://zars/fhir/Task/${TASK_ID}" |\
+  jq .
+```
+
+
 [1]: <https://www.hl7.org/fhir/capabilitystatement.html>
 
 [2]: <https://curl.se>
+   

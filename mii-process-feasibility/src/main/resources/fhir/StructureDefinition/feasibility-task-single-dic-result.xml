@@ -20,9 +20,32 @@
     <baseDefinition value="http://dsf.dev/fhir/StructureDefinition/task-base"/>
     <derivation value="constraint"/>
     <differential>
+<!--                <element id="Task.instantiatesCanonical">-->
+<!--                    <path value="Task.instantiatesCanonical"/>-->
+<!--                    <slicing>-->
+<!--                        <discriminator>-->
+<!--                            <type value="value"/>-->
+<!--                            <path value="$this"/>-->
+<!--                        </discriminator>-->
+<!--                        <ordered value="false"/>-->
+<!--                        <rules value="open"/>-->
+<!--                    </slicing>-->
+<!--                    <min value="0"/>-->
+<!--                    <max value="*"/> &lt;!&ndash; Machen des Elements wiederholbar &ndash;&gt;-->
+<!--                </element>-->
+<!--                <element id="Task.instantiatesCanonical:feasibilityRequest">-->
+<!--                    <path value="Task.instantiatesCanonical"/>-->
+<!--                    <sliceName value="feasibilityRequest"/>-->
+<!--                    <fixedCanonical value="http://medizininformatik-initiative.de/bpe/Process/feasibilityRequest|#{version}"/>-->
+<!--                </element>-->
+<!--                <element id="Task.instantiatesCanonical:feasibilityExecute">-->
+<!--                    <path value="Task.instantiatesCanonical"/>-->
+<!--                    <sliceName value="feasibilityExecute"/>-->
+<!--                    <fixedCanonical value="http://medizininformatik-initiative.de/bpe/Process/feasibilityExecute|#{version}"/>-->
+<!--                </element>-->
         <element id="Task.instantiatesCanonical">
             <path value="Task.instantiatesCanonical"/>
-            <fixedCanonical value="http://medizininformatik-initiative.de/bpe/Process/feasibilityRequest|#{version}"/>
+            <!--            <fixedCanonical value="http://medizininformatik-initiative.de/bpe/Process/feasibilityRequest|#{version}"/>-->
         </element>
         <element id="Task.input">
             <extension url="http://hl7.org/fhir/StructureDefinition/structuredefinition-explicit-type-name">

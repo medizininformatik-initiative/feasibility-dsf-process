@@ -39,6 +39,8 @@ public class DownloadMeasureReport extends AbstractServiceDelegate implements In
 
     @Override
     protected void doExecute(DelegateExecution execution, Variables variables) {
+        logger.info("doExecute download MeasureReport");
+
         var task = variables.getLatestTask();
         var measureReportId = getMeasureReportId(task);
         var client = clientProvider

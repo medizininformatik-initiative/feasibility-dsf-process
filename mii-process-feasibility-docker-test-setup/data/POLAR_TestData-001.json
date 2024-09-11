@@ -1,0 +1,1447 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [ {
+    "fullUrl": "Patient/Polar-WP-Mix-001",
+    "resource": {
+      "resourceType": "Patient",
+      "id": "Polar-WP-Mix-001",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-person/StructureDefinition/Patient" ]
+      },
+      "identifier": [ {
+        "use": "usual",
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "MR"
+          } ]
+        },
+        "system": "https://POLARWPMIX.de/pid",
+        "value": "Polar-WP-Mix-001"
+      } ],
+      "name": [ {
+        "use": "official",
+        "family": "Mustermann",
+        "given": [ "Henry_01_WP1.4" ]
+      } ],
+      "gender": "male",
+      "birthDate": "1950-01-01",
+      "address": [ {
+        "type": "both",
+        "line": [ "Musterstraße 1" ],
+        "city": "Bonn",
+        "postalCode": "53121",
+        "country": "DE"
+      } ],
+      "generalPractitioner": [ {
+        "display": "AOK"
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/Polar-WP-Mix-001"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-001-E-1",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-001-E-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "VN"
+          } ]
+        },
+        "_system": {
+          "extension": [ {
+            "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+            "valueCode": "unknown"
+          } ]
+        },
+        "value": "Polar-WP-Mix-001-E-1",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "IMP",
+        "display": "inpatient encounter"
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "einrichtungskontakt",
+          "display": "Einrichtungskontakt"
+        } ]
+      } ],
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "period": {
+        "start": "2020-05-05T00:00:00+02:00",
+        "end": "2020-05-07T00:00:00+02:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "reference": "Condition/Polar-WP-Mix-001-E-1-D-1"
+        },
+        "use": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/diagnosis-role",
+            "code": "CM",
+            "display": "Comorbidity diagnosis"
+          } ]
+        }
+      }, {
+        "condition": {
+          "reference": "Condition/Polar-WP-Mix-001-E-1-D-2"
+        },
+        "use": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/diagnosis-role",
+            "code": "CC",
+            "display": "Chief complaint"
+          } ]
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-001-E-1"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-001-E-2",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-001-E-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "identifier": [ {
+        "type": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "VN"
+          } ]
+        },
+        "_system": {
+          "extension": [ {
+            "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+            "valueCode": "unknown"
+          } ]
+        },
+        "value": "Polar-WP-Mix-001-E-2",
+        "assigner": {
+          "identifier": {
+            "system": "https://www.medizininformatik-initiative.de/fhir/core/NamingSystem/org-identifier",
+            "value": "POLARWPMIX"
+          }
+        }
+      } ],
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "IMP",
+        "display": "inpatient encounter"
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "einrichtungskontakt",
+          "display": "Einrichtungskontakt"
+        } ]
+      } ],
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "period": {
+        "start": "2020-05-10T00:00:00+02:00",
+        "end": "2020-05-20T00:00:00+02:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "reference": "Condition/Polar-WP-Mix-001-E-2-D-3"
+        },
+        "use": {
+          "coding": [ {
+            "system": "http://terminology.hl7.org/CodeSystem/diagnosis-role",
+            "code": "CC",
+            "display": "Chief complaint"
+          } ]
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-001-E-2"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-001-E-1-A-1",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-001-E-1-A-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "status": "finished",
+      "class": {
+        "extension": [ {
+          "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+          "valueCode": "unknown"
+        } ]
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "abteilungskontakt",
+          "display": "Abteilungskontakt"
+        } ]
+      } ],
+      "serviceType": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel",
+          "code": "1600",
+          "display": "Unfallchirurgie"
+        } ]
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "period": {
+        "start": "2020-05-05T00:00:00+02:00",
+        "end": "2020-05-07T00:00:00+02:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "_reference": {
+            "extension": [ {
+              "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+              "valueCode": "unknown"
+            } ]
+          }
+        }
+      } ],
+      "partOf": {
+        "reference": "Encounter/Polar-WP-Mix-001-E-1"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-001-E-1-A-1"
+    }
+  }, {
+    "fullUrl": "Encounter/Polar-WP-Mix-001-E-2-A-2",
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "Polar-WP-Mix-001-E-2-A-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-fall/StructureDefinition/KontaktGesundheitseinrichtung" ]
+      },
+      "status": "finished",
+      "class": {
+        "extension": [ {
+          "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+          "valueCode": "unknown"
+        } ]
+      },
+      "type": [ {
+        "coding": [ {
+          "code": "abteilungskontakt",
+          "display": "Abteilungskontakt"
+        } ]
+      } ],
+      "serviceType": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/dkgev/Fachabteilungsschluessel",
+          "code": "1600",
+          "display": "Unfallchirurgie"
+        } ]
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "period": {
+        "start": "2020-05-10T00:00:00+02:00",
+        "end": "2020-05-20T00:00:00+02:00"
+      },
+      "diagnosis": [ {
+        "condition": {
+          "_reference": {
+            "extension": [ {
+              "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+              "valueCode": "unknown"
+            } ]
+          }
+        }
+      } ],
+      "partOf": {
+        "reference": "Encounter/Polar-WP-Mix-001-E-2"
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Encounter/Polar-WP-Mix-001-E-2-A-2"
+    }
+  }, {
+    "fullUrl": "Condition/Polar-WP-Mix-001-E-1-D-1",
+    "resource": {
+      "resourceType": "Condition",
+      "id": "Polar-WP-Mix-001-E-1-D-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-diagnose/StructureDefinition/Diagnose" ]
+      },
+      "identifier": [ {
+        "value": "Polar-WP-Mix-001-E-1-D-1"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+          "version": "2020",
+          "code": "M80.00"
+        } ],
+        "text": "Osteroporose"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "recordedDate": "2019-01-01T00:00:00+01:00"
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Condition/Polar-WP-Mix-001-E-1-D-1"
+    }
+  }, {
+    "fullUrl": "Condition/Polar-WP-Mix-001-E-1-D-2",
+    "resource": {
+      "resourceType": "Condition",
+      "id": "Polar-WP-Mix-001-E-1-D-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-diagnose/StructureDefinition/Diagnose" ]
+      },
+      "identifier": [ {
+        "value": "Polar-WP-Mix-001-E-1-D-2"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+          "version": "2020",
+          "code": "S02.0"
+        } ],
+        "text": "Sturz"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "recordedDate": "2019-01-01T00:00:00+01:00"
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Condition/Polar-WP-Mix-001-E-1-D-2"
+    }
+  }, {
+    "fullUrl": "Condition/Polar-WP-Mix-001-E-2-D-3",
+    "resource": {
+      "resourceType": "Condition",
+      "id": "Polar-WP-Mix-001-E-2-D-3",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-diagnose/StructureDefinition/Diagnose" ]
+      },
+      "identifier": [ {
+        "value": "Polar-WP-Mix-001-E-2-D-3"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/icd-10-gm",
+          "version": "2020",
+          "code": "K35.2"
+        } ],
+        "text": "Akute Appendizitis mit generalisierter Peritonitis"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "recordedDate": "2019-03-24T00:00:00+01:00"
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Condition/Polar-WP-Mix-001-E-2-D-3"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1931880189",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1931880189",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1931880189"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "N06AA09",
+          "userSelected": true
+        } ],
+        "text": "ATC_AMITRYPTILIN"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 10,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1931880189"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-1",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-1",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931880189"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-03T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-1"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1931880247",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1931880247",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1931880247"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "N06AA25",
+          "userSelected": true
+        } ],
+        "text": "ATC_AMITRYPTILIN"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 11,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1931880247"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-2",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-2",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931880247"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-03T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-2"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1931939763",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1931939763",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1931939763"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "N06CA01",
+          "userSelected": true
+        } ],
+        "text": "ATC_AMITRYPTILIN"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 12,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1931939763"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-3",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-3",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931939763"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-04T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-3"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1931021048",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1931021048",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1931021048"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "N05CF02",
+          "userSelected": true
+        } ],
+        "text": "ATC_ZOLPIDEM"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 13,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1931021048"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-4",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-4",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931021048"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-06T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-4"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1043482770",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1043482770",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1043482770"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "M05BA01",
+          "userSelected": true
+        } ],
+        "text": "ATC_BISPHOSPHONATE"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 14,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1043482770"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-5",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-5",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1043482770"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-5"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1043482773",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1043482773",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1043482773"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "M05BA04",
+          "userSelected": true
+        } ],
+        "text": "ATC_BISPHOSPHONATE"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 15,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1043482773"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-6",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-6",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1043482773"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-6"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1043482771",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1043482771",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1043482771"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "M05BA02",
+          "userSelected": true
+        } ],
+        "text": "ATC_BISPHOSPHONATE"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 16,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1043482771"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-7",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-7",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1043482771"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-7"
+    }
+  }, {
+    "fullUrl": "Medication/Medication-1043482776",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication-1043482776",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication-1043482776"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/bfarm/atc",
+          "code": "M05BA07",
+          "userSelected": true
+        } ],
+        "text": "ATC_BISPHOSPHONATE"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 17,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication-1043482776"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-8",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-8",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1043482776"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-13T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-8"
+    }
+  }, {
+    "fullUrl": "Medication/Medication--17271717",
+    "resource": {
+      "resourceType": "Medication",
+      "id": "Medication--17271717",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/Medication" ]
+      },
+      "identifier": [ {
+        "value": "Medication--17271717"
+      } ],
+      "code": {
+        "coding": [ {
+          "system": "http://fhir.de/CodeSystem/ifa/pzn",
+          "code": "04748391",
+          "userSelected": true
+        } ],
+        "text": "PZN_NIFEDIPIN"
+      },
+      "ingredient": [ {
+        "itemCodeableConcept": {
+          "coding": [ {
+            "system": "http://fhir.de/CodeSystem/ask",
+            "_code": {
+              "extension": [ {
+                "url": "http://terminology.hl7.org/CodeSystem/data-absent-reason",
+                "valueCode": "unknown"
+              } ]
+            }
+          } ]
+        },
+        "strength": {
+          "numerator": {
+            "value": 18,
+            "unit": "milligram",
+            "system": "http://unitsofmeasure.org",
+            "code": "mg"
+          },
+          "denominator": {
+            "value": 1,
+            "system": "http://XXX",
+            "code": "Filmtabletten"
+          }
+        }
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Medication/Medication--17271717"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-9",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-9",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-12T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-9"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-10",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-10",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-22T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-10"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-11",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-11",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-03T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-11"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-12",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-12",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-03T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-12"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-13",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-13",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-04T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-13"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-14",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-14",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-06T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-14"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-15",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-15",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-15"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-16",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-16",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication--17271717"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-16"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-17",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-17",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931880189"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-07T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-17"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-18",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-18",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931880247"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-13T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-18"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-19",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-19",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931939763"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-12T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-19"
+    }
+  }, {
+    "fullUrl": "MedicationStatement/Polar-WP-Mix-001-MS-20",
+    "resource": {
+      "resourceType": "MedicationStatement",
+      "id": "Polar-WP-Mix-001-MS-20",
+      "meta": {
+        "profile": [ "https://www.medizininformatik-initiative.de/fhir/core/modul-medikation/StructureDefinition/MedicationStatement" ]
+      },
+      "status": "active",
+      "medicationReference": {
+        "reference": "Medication/Medication-1931021048"
+      },
+      "subject": {
+        "reference": "Patient/Polar-WP-Mix-001"
+      },
+      "effectiveDateTime": "2020-05-22T00:00:00+02:00",
+      "dosage": [ {
+        "doseAndRate": [ {
+          "doseQuantity": {
+            "value": 1,
+            "unit": "Filmtabletten",
+            "system": "http://unitsofmeasure.org",
+            "code": "1"
+          }
+        } ]
+      } ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "MedicationStatement/Polar-WP-Mix-001-MS-20"
+    }
+  } ]
+}

@@ -71,6 +71,21 @@ public class EnvGenerator {
         Stream<String> webBrowserTestUserThumbprint = filterAndMapToThumbprint(clientCertificateFilesByCommonName,
                 "Webbrowser Test User");
 
+        Stream<String> brokerDic5UserThumbprints = filterAndMapToThumbprint(clientCertificateFilesByCommonName, "broker-dic-5-client",
+                "Webbrowser Test User");
+        Stream<String> brokerDic5UserThumbprintsPermanentDelete = filterAndMapToThumbprint(clientCertificateFilesByCommonName, "broker-dic-5-client",
+                "Webbrowser Test User");
+
+        Stream<String> brokerDic6UserThumbprintsThumbprints = filterAndMapToThumbprint(clientCertificateFilesByCommonName, "broker-dic-6-client",
+                "Webbrowser Test User");
+        Stream<String> brokerDic6UserThumbprintsPermanentDelete = filterAndMapToThumbprint(clientCertificateFilesByCommonName,
+                "broker-dic-6-client", "Webbrowser Test User");
+
+        Stream<String> brokerUserThumbprints = filterAndMapToThumbprint(clientCertificateFilesByCommonName, "broker-client",
+                "Webbrowser Test User");
+        Stream<String> brokerUserThumbprintsPermanentDelete = filterAndMapToThumbprint(clientCertificateFilesByCommonName,
+                "broker-client", "Webbrowser Test User");
+
         List<EnvEntry> entries = List.of(
                 new EnvEntry("ZARS_" + USER_THUMBPRINTS, zarsUserThumbprints, "ZARS_" + USER_THUMBPRINTS_PERMANENTDELETE,
                         zarsUserThumbprintsPermanentDelete),
@@ -86,6 +101,15 @@ public class EnvGenerator {
 
                 new EnvEntry("DIC_4_" + USER_THUMBPRINTS, dic4UserThumbprints, "DIC_4_" + USER_THUMBPRINTS_PERMANENTDELETE,
                         dic4UserThumbprintsPermanentDelete),
+
+                new EnvEntry("BROKER_DIC_5_" + USER_THUMBPRINTS, brokerDic5UserThumbprints, "BROKER_DIC_5_" + USER_THUMBPRINTS_PERMANENTDELETE,
+                        brokerDic5UserThumbprintsPermanentDelete),
+
+                new EnvEntry("BROKER_DIC_6_" + USER_THUMBPRINTS, brokerDic6UserThumbprintsThumbprints, "BROKER_DIC_6_" + USER_THUMBPRINTS_PERMANENTDELETE,
+                        brokerDic6UserThumbprintsPermanentDelete),
+
+                new EnvEntry("BROKER_" + USER_THUMBPRINTS, brokerUserThumbprints, "BROKER_" + USER_THUMBPRINTS_PERMANENTDELETE,
+                        brokerUserThumbprintsPermanentDelete),
 
                 new EnvEntry("WEBBROWSER_TEST_USER_THUMBPRINT", webBrowserTestUserThumbprint));
 
