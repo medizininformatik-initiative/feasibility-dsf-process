@@ -62,4 +62,9 @@ public class FlareWebserviceClientImpl implements FlareWebserviceClient {
                     format("Error sending %s request to flare webservice url '%s'.", req.getMethod(), req.getURI()), e);
         }
     }
+
+    @Override
+    public URI getFlareBaseUrl() {
+        return flareBaseUrl;
+    }
 }

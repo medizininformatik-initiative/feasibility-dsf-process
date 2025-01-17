@@ -23,7 +23,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -37,12 +39,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @Testcontainers
 public class FlareWebserviceClientImplTimeoutsIT extends FlareWebserviceClientImplBaseIT {
 
+    private static final String STORE_ID = "foo";
     private static final int PROXY_PORT = 8666;
-    private static final int RANDOM_CLIENT_TIMEOUT = new Random().nextInt(5000, 20000);
+    private static final Integer RANDOM_CLIENT_TIMEOUT = new Random().nextInt(5000, 20000);
+    private static URL feasibilityConfig = getResource("nonProxy_timeout.yml");
 
     private Stopwatch executionTimer = Stopwatch.createUnstarted();
 
-    @Autowired protected FlareWebserviceClient flareClient;
+    @Autowired protected Map<String, FlareWebserviceClient> flareClients;
 
     @Container
     public static ToxiproxyContainer toxiproxy = new ToxiproxyContainer(
@@ -54,16 +58,13 @@ public class FlareWebserviceClientImplTimeoutsIT extends FlareWebserviceClientIm
     private static Latency latency;
 
     @DynamicPropertySource
-    static void dynamicProperties(DynamicPropertyRegistry registry) {
-        var flareHost = toxiproxy.getHost();
-        var flarePort = toxiproxy.getMappedPort(PROXY_PORT);
-
-        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.flare.timeout.connect",
-                () -> RANDOM_CLIENT_TIMEOUT);
-        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.evaluation.strategy",
-                () -> "structured-query");
-        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.flare.base_url",
-                () -> String.format("http://%s:%s/", flareHost, flarePort));
+    static void dynamicProperties(DynamicPropertyRegistry registry) throws IOException {
+        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.configuration.file",
+                () -> feasibilityConfig.getPath());
+        registry.add("STORE_ID", () -> STORE_ID);
+        registry.add("BASE_URL",
+                () -> "http://%s:%d/".formatted(toxiproxy.getHost(), toxiproxy.getMappedPort(PROXY_PORT)));
+        registry.add("TIMEOUT", () -> RANDOM_CLIENT_TIMEOUT.toString());
     }
 
     @BeforeAll
@@ -87,7 +88,7 @@ public class FlareWebserviceClientImplTimeoutsIT extends FlareWebserviceClientIm
         var proxyTimeout = RANDOM_CLIENT_TIMEOUT + 10000;
         latency.setLatency(proxyTimeout);
 
-        assertThatThrownBy(() -> flareClient.requestFeasibility(rawStructuredQuery))
+        assertThatThrownBy(() -> flareClients.get(STORE_ID).requestFeasibility(rawStructuredQuery))
                 .describedAs(new Description() {
 
                     @Override
@@ -113,6 +114,6 @@ public class FlareWebserviceClientImplTimeoutsIT extends FlareWebserviceClientIm
                 .openStream().readAllBytes();
         latency.setLatency(RANDOM_CLIENT_TIMEOUT - 2000);
 
-        assertThatNoException().isThrownBy(() -> flareClient.requestFeasibility(rawStructuredQuery));
+        assertThatNoException().isThrownBy(() -> flareClients.get(STORE_ID).requestFeasibility(rawStructuredQuery));
     }
 }

@@ -171,6 +171,7 @@ services:
     - app_zars_client_certificate.pem
     - app_zars_client_certificate_private_key.pem
     - app_client_certificate_private_key.pem.password
+    - feasibility_zars.yml
     volumes:
     - type: bind
       source: ./zars/bpe/plugin
@@ -186,7 +187,10 @@ services:
     - type: bind
       source: ./zars/bpe/cache
       target: /opt/bpe/cache
+    ports:
+      - 5005:5005
     environment:
+      EXTRA_JVM_ARGS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       TZ: Europe/Berlin
       DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
       DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
@@ -202,10 +206,12 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_GROUP: zars_camunda_users
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: zars_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://zars/fhir
-      DEV_DSF_BPE_PROCESS_EXCLUDED:  medizininformatik-initiativede_feasibilityExecute|0.0
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CONFIGURATION_FILE: /run/secrets/feasibility_zars.yml
     networks:
       zars-bpe-frontend:
       zars-bpe-backend:
+      dic-1-bpe-backend:
+      dic-2-bpe-backend:
       internet:
     depends_on:
       db:
@@ -214,6 +220,10 @@ services:
       zars-fhir-app:
         condition:  service_healthy
         restart: true
+      dic-1-store:
+        condition: service_healthy
+      dic-2-store:
+        condition: service_healthy
 
   # ---- DIC-1 - FHIR ---------------------------------------------------------
   dic-1-fhir-app:
@@ -297,6 +307,7 @@ services:
     - app_dic_1_client_certificate.pem
     - app_dic_1_client_certificate_private_key.pem
     - app_client_certificate_private_key.pem.password
+    - feasibility_dic_1.yml
     volumes:
     - type: bind
       source: ./dic-1/bpe/process
@@ -325,10 +336,7 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: dic_1_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://dic-1/fhir
       DEV_DSF_BPE_PROCESS_EXCLUDED:  medizininformatik-initiativede_feasibilityRequest|0.0
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_FLARE_BASE_URL: http://dic-1-store:8080/
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_FLARE_TIMEOUT_CONNECT: 2000
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: structured-query
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CONFIGURATION_FILE: /run/secrets/feasibility_dic_1.yml
     networks:
       dic-1-bpe-frontend:
       dic-1-bpe-backend:
@@ -357,6 +365,7 @@ services:
       retries: 5
     environment:
       FLARE_FHIR_SERVER: http://dic-1-store-fhir-server:8080/fhir/
+      LOG_LEVEL: debug
     networks:
       dic-1-bpe-backend:
     depends_on:
@@ -489,6 +498,7 @@ services:
     - app_dic_2_client_certificate.pem
     - app_dic_2_client_certificate_private_key.pem
     - app_client_certificate_private_key.pem.password
+    - feasibility_dic_2.yml
     volumes:
     - type: bind
       source: ./dic-2/bpe/process
@@ -517,9 +527,7 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: dic_2_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://dic-2/fhir
       DEV_DSF_BPE_PROCESS_EXCLUDED:  medizininformatik-initiativede_feasibilityRequest|0.0
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://dic-2-store:8080/fhir
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "true"
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CONFIGURATION_FILE: /run/secrets/feasibility_dic_2.yml
     networks:
       dic-2-bpe-frontend:
       dic-2-bpe-backend:
@@ -537,7 +545,7 @@ services:
 
   # ---- DIC-2 - FHIR Data Store ----------------------------------------------
   dic-2-store:
-    image: samply/blaze:0.24
+    image: samply/blaze:0.30
     restart: on-failure
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:8080/health" ]
@@ -634,10 +642,11 @@ services:
       - db_dic_3_bpe_user.password
       - db_dic_3_bpe_user_camunda.password
       - app_client_trust_certificates.pem
-      - dic_3_store_proxy_self_signed_ca.p12
+      - dic_3_store_proxy_self_signed_ca.pem
       - app_dic_3_client_certificate.pem
       - app_dic_3_client_certificate_private_key.pem
       - app_client_certificate_private_key.pem.password
+      - feasibility_dic_3.yml
     volumes:
       - type: bind
         source: ./dic-3/bpe/process
@@ -649,10 +658,7 @@ services:
       - type: bind
         source: ./dic-3/bpe/cache
         target: /opt/bpe/cache
-    ports:
-    - 5005:5005
     environment:
-      EXTRA_JVM_ARGS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
       TZ: Europe/Berlin
       DEV_DSF_SERVER_AUTH_TRUST_CLIENT_CERTIFICATE_CAS: /run/secrets/app_client_trust_certificates.pem
       DEV_DSF_BPE_DB_LIQUIBASE_PASSWORD_FILE: /run/secrets/db_liquibase.password
@@ -669,14 +675,7 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: dic_3_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://dic-3/fhir
       DEV_DSF_BPE_PROCESS_EXCLUDED:  medizininformatik-initiativede_feasibilityRequest|0.0
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_TRUST_STORE_PATH: /run/secrets/dic_3_store_proxy_self_signed_ca.p12
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_TRUST_STORE_PASSWORD: "testpw"
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_AUTH_OAUTH_ISSUER_URL: "https://dic-3-keycloak-proxy/realms/test"
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_AUTH_OAUTH_CLIENT_ID: "account"
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_AUTH_OAUTH_CLIENT_PASSWORD: "test"
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: https://dic-3-store-proxy/fhir
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CONFIGURATION_FILE: /run/secrets/feasibility_dic_3.yml
     networks:
       dic-3-bpe-frontend:
       dic-3-bpe-backend:
@@ -749,7 +748,7 @@ services:
 
   # ---- DIC-3 - FHIR Data Store ----------------------------------------------
   dic-3-store:
-    image: samply/blaze:0.30.0
+    image: samply/blaze:0.30
     restart: on-failure
     healthcheck:
       test: [ "CMD", "curl", "http://localhost:8080/health" ]
@@ -854,6 +853,7 @@ services:
       - app_dic_4_client_certificate.pem
       - app_dic_4_client_certificate_private_key.pem
       - app_client_certificate_private_key.pem.password
+      - feasibility_dic_4.yml
     volumes:
       - type: bind
         source: ./dic-4/bpe/process
@@ -882,9 +882,7 @@ services:
       DEV_DSF_BPE_DB_USER_CAMUNDA_USERNAME: dic_4_camunda_server_user
       DEV_DSF_BPE_FHIR_SERVER_BASE_URL: https://dic-4/fhir
       DEV_DSF_BPE_PROCESS_EXCLUDED:  medizininformatik-initiativede_feasibilityRequest|0.0
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CLIENT_STORE_BASE_URL: http://dic-4-store:8080/fhir
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_STRATEGY: cql
-      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_EVALUATION_OBFUSCATE: "false"
+      DE_MEDIZININFORMATIK_INITIATIVE_FEASIBILITY_DSF_PROCESS_CONFIGURATION_FILE: /run/secrets/feasibility_dic_4.yml
     networks:
       dic-4-bpe-frontend:
       dic-4-bpe-backend:
@@ -992,6 +990,8 @@ secrets:
     file: ./secrets/db_fhir_zars_user.password
   db_fhir_zars_user_permanent_delete.password:
     file: ./secrets/db_fhir_zars_user_permanent_delete.password
+  feasibility_zars.yml:
+    file: ./secrets/feasibility_zars.yml
 
   db_dic_1_bpe_user.password:
     file: secrets/db_dic_1_bpe_user.password
@@ -1005,6 +1005,8 @@ secrets:
     file: ./secrets/db_fhir_dic_1_user.password
   db_fhir_dic_1_user_permanent_delete.password:
     file: ./secrets/db_fhir_dic_1_user_permanent_delete.password
+  feasibility_dic_1.yml:
+    file: ./secrets/feasibility_dic_1.yml
 
   db_dic_2_bpe_user.password:
     file: secrets/db_dic_2_bpe_user.password
@@ -1018,6 +1020,8 @@ secrets:
     file: ./secrets/db_fhir_dic_2_user.password
   db_fhir_dic_2_user_permanent_delete.password:
     file: ./secrets/db_fhir_dic_2_user_permanent_delete.password
+  feasibility_dic_2.yml:
+    file: ./secrets/feasibility_dic_2.yml
 
   db_dic_3_bpe_user.password:
     file: secrets/db_dic_3_bpe_user.password
@@ -1031,7 +1035,8 @@ secrets:
     file: ./secrets/db_fhir_dic_3_user.password
   db_fhir_dic_3_user_permanent_delete.password:
     file: ./secrets/db_fhir_dic_3_user_permanent_delete.password
-
+  feasibility_dic_3.yml:
+    file: ./secrets/feasibility_dic_3.yml
   dic_3_store_proxy.htpasswd:
     file: ./secrets/dic_3_store_proxy.htpasswd
   dic_3_store_proxy_cert_bundle.pem:
@@ -1040,6 +1045,8 @@ secrets:
     file: ./secrets/dic_3_store_proxy_cert_key.pem
   dic_3_store_proxy_self_signed_ca.p12:
     file: ./secrets/dic_3_store_proxy_self_signed_ca.p12
+  dic_3_store_proxy_self_signed_ca.pem:
+    file: ./secrets/dic_3_store_proxy_self_signed_ca.pem
 
   db_dic_4_bpe_user.password:
     file: secrets/db_dic_4_bpe_user.password
@@ -1053,6 +1060,8 @@ secrets:
     file: ./secrets/db_fhir_dic_4_user.password
   db_fhir_dic_4_user_permanent_delete.password:
     file: ./secrets/db_fhir_dic_4_user_permanent_delete.password
+  feasibility_dic_4.yml:
+    file: ./secrets/feasibility_dic_4.yml
 
 networks:
   internet:

@@ -17,10 +17,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: 17
@@ -30,14 +30,14 @@ jobs:
         server-password: GITHUB_TOKEN
 
     - name: Cache Local Maven Repo
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.m2/repository
         key: maven-repo
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
 
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
@@ -46,7 +46,7 @@ jobs:
         USERNAME: ${{ github.actor }}
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
 
   build:
@@ -54,14 +54,14 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Prepare Version
       id: prep
       run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: 17
@@ -71,14 +71,14 @@ jobs:
         server-password: GITHUB_TOKEN
 
     - name: Cache Local Maven Repo
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.m2/repository
         key: maven-repo
 
     - name: Add GitHub Server Credentials to Maven settings.xml
-      uses: s4u/maven-settings-action@v2.4.0
+      uses: s4u/maven-settings-action@v3.1.0
       with:
         servers: '[{"id": "highmed-dsf", "username": "${{ github.actor }}", "password": "${{ secrets.GITHUB_TOKEN }}"}]'
 
@@ -92,7 +92,7 @@ jobs:
         USERNAME: ${{ github.actor }}
 
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         draft: true
         generate_release_notes: true

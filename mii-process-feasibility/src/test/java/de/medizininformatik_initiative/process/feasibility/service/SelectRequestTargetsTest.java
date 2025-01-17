@@ -12,10 +12,14 @@ import dev.dsf.fhir.client.FhirWebserviceClient;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.hl7.fhir.r4.model.BooleanType;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent;
+import org.hl7.fhir.r4.model.Bundle.BundleEntrySearchComponent;
+import org.hl7.fhir.r4.model.Bundle.SearchEntryMode;
 import org.hl7.fhir.r4.model.Coding;
 import org.hl7.fhir.r4.model.Endpoint;
 import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Organization;
+import org.hl7.fhir.r4.model.OrganizationAffiliation;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Task;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,11 +47,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class SelectRequestTargetsTest {
 
-    private static final String PARENT_ORGANIZATION_ID = "medizininformatik-initiative.de";
+    private static final String LOCAL_ORGANIZATION = "foo";
+    private static final String PARENT_ORGANIZATION = "foo.bar";
     private static final String BASE_URL = "foo/";
     private static final String MEASURE_ID = "measure-id-11:57:29";
 
     @Captor ArgumentCaptor<Targets> targetsValuesCaptor;
+    @Captor ArgumentCaptor<Identifier> identifierCaptor;
 
     @Mock private EndpointProvider endpointProvider;
     @Mock private OrganizationProvider organizationProvider;
@@ -60,7 +66,9 @@ public class SelectRequestTargetsTest {
     @Mock private Task task;
     @Mock private Endpoint endpointA;
     @Mock private Endpoint endpointB;
-    @Mock Bundle bundle;
+    @Mock private Bundle bundle;
+    @Mock private BundleEntryComponent entry;
+    @Mock private BundleEntrySearchComponent search;
     @Mock private Targets targets;
     @Mock private Target target;
 
@@ -78,6 +86,18 @@ public class SelectRequestTargetsTest {
         when(api.getFhirWebserviceClientProvider()).thenReturn(clientProvider);
         when(clientProvider.getLocalWebserviceClient()).thenReturn(client);
         when(client.getBaseUrl()).thenReturn(BASE_URL);
+        Organization localOrganization = new Organization()
+                .setIdentifier(List.of(new Identifier().setValue(LOCAL_ORGANIZATION)));
+        when(organizationProvider.getLocalOrganization()).thenReturn(Optional.of(localOrganization));
+        when(client.search(eq(OrganizationAffiliation.class), Mockito.anyMap())).thenReturn(bundle);
+        when(bundle.getEntry()).thenReturn(List.of(entry));
+        when(entry.hasSearch()).thenReturn(true);
+        when(entry.getSearch()).thenReturn(search);
+        when(search.getMode()).thenReturn(SearchEntryMode.INCLUDE);
+        when(entry.hasResource()).thenReturn(true);
+        when(entry.getResource())
+                .thenReturn(new Organization().setActive(true)
+                        .setIdentifier(List.of(new Identifier().setValue(PARENT_ORGANIZATION))));
     }
 
     @Test
@@ -139,7 +159,7 @@ public class SelectRequestTargetsTest {
                 .setEndpoint(List.of(new Reference(dic_endpoint).setReference(endpointReference)))
                 .setActiveElement((BooleanType) new BooleanType().setValue(true));
 
-        when(organizationProvider.getOrganizations(any(Identifier.class), any(Coding.class)))
+        when(organizationProvider.getOrganizations(identifierCaptor.capture(), any(Coding.class)))
                 .thenReturn(List.of(organization));
         when(client.read(Endpoint.class, endpointReferenceId)).thenReturn(dic_endpoint);
         when(variables.createTarget(eq(organizationId.getValue()), eq(endpointId.getValue()), eq(endpointAddress),
@@ -149,6 +169,7 @@ public class SelectRequestTargetsTest {
 
         service.doExecute(execution, variables);
 
+        assertEquals(PARENT_ORGANIZATION, identifierCaptor.getValue().getValue());
         verify(variables).setTargets(targets);
     }
 
@@ -183,7 +204,7 @@ public class SelectRequestTargetsTest {
         var targetA = Mockito.mock(Target.class);
         var targetB = Mockito.mock(Target.class);
 
-        when(organizationProvider.getOrganizations(any(Identifier.class), any(Coding.class)))
+        when(organizationProvider.getOrganizations(identifierCaptor.capture(), any(Coding.class)))
                 .thenReturn(List.of(organizationA, organizationB));
         when(client.read(Endpoint.class, dic_1_endpointReference)).thenReturn(dic_1_endpoint);
         when(client.read(Endpoint.class, dic_2_endpointReference)).thenReturn(dic_2_endpoint);
@@ -197,6 +218,7 @@ public class SelectRequestTargetsTest {
 
         service.doExecute(execution, variables);
 
+        assertEquals(PARENT_ORGANIZATION, identifierCaptor.getValue().getValue());
         verify(variables).setTargets(targets);
     }
 }

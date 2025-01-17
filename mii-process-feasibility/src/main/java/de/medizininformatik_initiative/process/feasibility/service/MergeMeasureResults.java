@@ -1,13 +1,12 @@
 package de.medizininformatik_initiative.process.feasibility.service;
 
-import de.medizininformatik_initiative.process.feasibility.client.flare.FlareWebserviceClient;
 import dev.dsf.bpe.v1.ProcessPluginApi;
 import dev.dsf.bpe.v1.activity.AbstractServiceDelegate;
 import dev.dsf.bpe.v1.variables.Variables;
+import org.camunda.bpm.engine.delegate.BpmnError;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.Coding;
-import org.hl7.fhir.r4.model.Library;
 import org.hl7.fhir.r4.model.Measure;
 import org.hl7.fhir.r4.model.MeasureReport;
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportGroupComponent;
@@ -15,61 +14,35 @@ import org.hl7.fhir.r4.model.MeasureReport.MeasureReportGroupPopulationComponent
 import org.hl7.fhir.r4.model.Period;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.CODESYSTEM_MEASURE_POPULATION;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.CODESYSTEM_MEASURE_POPULATION_VALUE_INITIAL_POPULATION;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_PERIOD_END;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_PERIOD_START;
-import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_LIBRARY;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_REPORT;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_RESULT_CCDL;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_RESULT_CQL;
 import static org.hl7.fhir.r4.model.MeasureReport.MeasureReportStatus.COMPLETE;
 import static org.hl7.fhir.r4.model.MeasureReport.MeasureReportType.SUMMARY;
 
-public class EvaluateStructuredQueryMeasure extends AbstractServiceDelegate implements InitializingBean {
+public class MergeMeasureResults extends AbstractServiceDelegate implements InitializingBean {
 
-    private static final String STRUCTURED_QUERY_CONTENT_TYPE = "application/json";
-
-    private final FlareWebserviceClient flareClient;
-
-    public EvaluateStructuredQueryMeasure(FlareWebserviceClient flareClient, ProcessPluginApi api) {
+    public MergeMeasureResults(ProcessPluginApi api) {
         super(api);
-        this.flareClient = flareClient;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        super.afterPropertiesSet();
-        Objects.requireNonNull(flareClient, "flareClient");
-    }
-
-    @Override
-    protected void doExecute(DelegateExecution execution, Variables variables)
-            throws IOException, InterruptedException {
-        var library = (Library) variables.getResource(VARIABLE_LIBRARY);
+    protected void doExecute(DelegateExecution execution, Variables variables) throws BpmnError, Exception {
         var measure = (Measure) variables.getResource(VARIABLE_MEASURE);
+        var cqlResult = Optional.ofNullable(variables.getInteger(VARIABLE_MEASURE_RESULT_CQL)).orElse(0);
+        var ccdlResult = Optional.ofNullable(variables.getInteger(VARIABLE_MEASURE_RESULT_CCDL)).orElse(0);
+        var report = buildMeasureReport(measure.getUrl(), cqlResult + ccdlResult);
 
-        var structuredQuery = getStructuredQuery(library);
-        var feasibility = getFeasibility(structuredQuery);
-        var measureReport = buildMeasureReport(measure.getUrl(), feasibility);
-
-        variables.setResource(VARIABLE_MEASURE_REPORT, measureReport);
-    }
-
-    private byte[] getStructuredQuery(Library library) {
-        return library.getContent().stream()
-                .filter(c -> c.getContentType().equalsIgnoreCase(STRUCTURED_QUERY_CONTENT_TYPE))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("query is missing content of type " + STRUCTURED_QUERY_CONTENT_TYPE))
-                .getData();
-    }
-
-    private int getFeasibility(byte[] structuredQuery) throws IOException, InterruptedException {
-        return flareClient.requestFeasibility(structuredQuery);
+        variables.setResource(VARIABLE_MEASURE_REPORT, report);
     }
 
     private MeasureReport buildMeasureReport(String measureRef, int feasibility) {

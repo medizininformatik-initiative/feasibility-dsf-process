@@ -1,12 +1,11 @@
 package de.medizininformatik_initiative.process.feasibility.spring.config;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProvider;
 import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProviderImpl;
-import de.medizininformatik_initiative.process.feasibility.EvaluationSettingsProvider;
 import de.medizininformatik_initiative.process.feasibility.FeasibilityCachingLaplaceCountObfuscator;
 import de.medizininformatik_initiative.process.feasibility.FeasibilityProcessPluginDeploymentStateListener;
+import de.medizininformatik_initiative.process.feasibility.FeasibilitySettings;
 import de.medizininformatik_initiative.process.feasibility.Obfuscator;
 import de.medizininformatik_initiative.process.feasibility.RateLimit;
 import de.medizininformatik_initiative.process.feasibility.client.flare.FlareWebserviceClient;
@@ -15,11 +14,12 @@ import de.medizininformatik_initiative.process.feasibility.message.SendDicReques
 import de.medizininformatik_initiative.process.feasibility.message.SendDicResponse;
 import de.medizininformatik_initiative.process.feasibility.service.DownloadFeasibilityResources;
 import de.medizininformatik_initiative.process.feasibility.service.DownloadMeasureReport;
-import de.medizininformatik_initiative.process.feasibility.service.EvaluateCqlMeasure;
+import de.medizininformatik_initiative.process.feasibility.service.EvaluateCQLMeasure;
 import de.medizininformatik_initiative.process.feasibility.service.EvaluateRequestRate;
-import de.medizininformatik_initiative.process.feasibility.service.EvaluateStructuredQueryMeasure;
+import de.medizininformatik_initiative.process.feasibility.service.EvaluateCCDLMeasure;
 import de.medizininformatik_initiative.process.feasibility.service.FeasibilityResourceCleaner;
 import de.medizininformatik_initiative.process.feasibility.service.LogReceiveTimeout;
+import de.medizininformatik_initiative.process.feasibility.service.MergeMeasureResults;
 import de.medizininformatik_initiative.process.feasibility.service.ObfuscateEvaluationResult;
 import de.medizininformatik_initiative.process.feasibility.service.RateLimitExceededTaskRejecter;
 import de.medizininformatik_initiative.process.feasibility.service.SelectRequestTargets;
@@ -37,25 +37,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.DEFAULT_OBFUSCATION_LAPLACE_EPSILON;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.DEFAULT_OBFUSCATION_LAPLACE_SENSITIVITY;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.DEFAULT_RATE_LIMIT_COUNT;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.DEFAULT_RATE_LIMIT_DURATION;
+
 @Configuration
 public class FeasibilityConfig {
 
-    private final IGenericClient storeClient;
-
-    @Autowired private final FhirContext fhirContext;
     @Autowired private ProcessPluginApi api;
 
-    private final EvaluationSettingsProvider evaluationSettingsProvider;
-    private final FlareWebserviceClient flareWebserviceClient;
-
-    public FeasibilityConfig(@Qualifier("store-client") IGenericClient storeClient,
-                             FhirContext fhirContext,
-                             EvaluationSettingsProvider evaluationSettingsProvider,
-                             FlareWebserviceClient flareWebserviceClient) {
-        this.storeClient = storeClient;
-        this.fhirContext = fhirContext;
-        this.evaluationSettingsProvider = evaluationSettingsProvider;
-        this.flareWebserviceClient = flareWebserviceClient;
+    public FeasibilityConfig() {
     }
 
     @Bean
@@ -65,9 +62,8 @@ public class FeasibilityConfig {
 
     @Bean
     public Obfuscator<Integer> feasibilityCountObfuscator() {
-        return new FeasibilityCachingLaplaceCountObfuscator(
-                evaluationSettingsProvider.resultObfuscationLaplaceSensitivity(),
-                evaluationSettingsProvider.resultObfuscationLaplaceEpsilon());
+        return new FeasibilityCachingLaplaceCountObfuscator(DEFAULT_OBFUSCATION_LAPLACE_SENSITIVITY,
+                DEFAULT_OBFUSCATION_LAPLACE_EPSILON);
     }
 
     //
@@ -116,9 +112,14 @@ public class FeasibilityConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public EvaluateRequestRate requestRateLimiter() {
-        return new EvaluateRequestRate(new RateLimit(evaluationSettingsProvider.getRateLimitCount(),
-                evaluationSettingsProvider.getRateLimitTimeIntervalDuration()), api);
+    public EvaluateRequestRate requestRateLimiters(FeasibilitySettings feasibilitySettings) {
+        return new EvaluateRequestRate(api,
+                feasibilitySettings.networks().entrySet().stream()
+                        .collect(Collectors.toMap(e -> e.getKey(),
+                                e -> Optional.ofNullable(e.getValue().rateLimit())
+                                        .map(r -> new RateLimit(r.count(), r.interval()))
+                                        .orElse(new RateLimit(DEFAULT_RATE_LIMIT_COUNT,
+                                                DEFAULT_RATE_LIMIT_DURATION)))));
     }
 
     @Bean
@@ -129,8 +130,8 @@ public class FeasibilityConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public SetupEvaluationSettings setupEvaluationSettings() {
-        return new SetupEvaluationSettings(evaluationSettingsProvider, api);
+    public SetupEvaluationSettings setupEvaluationSettings(FeasibilitySettings feasibilitySettings) {
+        return new SetupEvaluationSettings(feasibilitySettings, api);
     }
 
     @Bean
@@ -142,20 +143,23 @@ public class FeasibilityConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public StoreFeasibilityResources storeFeasibilityResources() {
-        return new StoreFeasibilityResources(storeClient, api, new FeasibilityResourceCleaner());
+    public StoreFeasibilityResources storeFeasibilityResources(Map<String, Set<String>> networkStores,
+                                                               Map<String, IGenericClient> storeClients) {
+        return new StoreFeasibilityResources(networkStores, storeClients, api, new FeasibilityResourceCleaner());
     }
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public EvaluateCqlMeasure evaluateCqlMeasure() {
-        return new EvaluateCqlMeasure(storeClient, api);
+    public EvaluateCQLMeasure evaluateCqlMeasure(Map<String, Set<String>> networkStores,
+                                                 Map<String, IGenericClient> storeClients) {
+        return new EvaluateCQLMeasure(networkStores, storeClients, api);
     }
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public EvaluateStructuredQueryMeasure evaluateStructureQueryMeasure() {
-        return new EvaluateStructuredQueryMeasure(flareWebserviceClient, api);
+    public EvaluateCCDLMeasure evaluateStructureQueryMeasure(Map<String, Set<String>> networkStores,
+                                                                        Map<String, FlareWebserviceClient> flareClients) {
+        return new EvaluateCCDLMeasure(networkStores, flareClients, api);
     }
 
     @Bean
@@ -184,8 +188,14 @@ public class FeasibilityConfig {
 
     @Bean
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-    public FeasibilityProcessPluginDeploymentStateListener deploymentStateListener() {
-        return new FeasibilityProcessPluginDeploymentStateListener(evaluationSettingsProvider.evaluationStrategy(),
-                storeClient, flareWebserviceClient);
+    public MergeMeasureResults mergeMeasureResults() {
+        return new MergeMeasureResults(api);
+    }
+
+    @Bean
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public FeasibilityProcessPluginDeploymentStateListener deploymentStateListener(Map<String, IGenericClient> storeClients,
+                                                                                   Map<String, FlareWebserviceClient> flareClients) {
+        return new FeasibilityProcessPluginDeploymentStateListener(storeClients, flareClients);
     }
 }

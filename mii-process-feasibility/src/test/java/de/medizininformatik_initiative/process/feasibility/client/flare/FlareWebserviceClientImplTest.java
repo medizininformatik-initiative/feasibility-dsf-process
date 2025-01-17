@@ -1,7 +1,5 @@
 package de.medizininformatik_initiative.process.feasibility.client.flare;
 
-import de.medizininformatik_initiative.process.feasibility.EvaluationSettingsProviderImpl;
-import de.medizininformatik_initiative.process.feasibility.EvaluationStrategy;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -11,16 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 
 import static jakarta.ws.rs.HttpMethod.POST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -102,55 +97,6 @@ public class FlareWebserviceClientImplTest {
     }
 
     @Test
-    void nullBaseUrlDoesNotFailAtInit() throws Exception {
-        var config = new FlareWebserviceClientSpringConfig();
-        assertThatNoException().isThrownBy(() -> {
-            config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                    EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
-        });
-    }
-
-    @Test
-    void nullBaseUrlFails() throws Exception {
-        var config = new FlareWebserviceClientSpringConfig();
-        var structuredQuery = "foo".getBytes();
-        flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
-
-        assertThatThrownBy(() -> flareWebserviceClient.requestFeasibility(structuredQuery))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("FLARE_BASE_URL is not set.");
-    }
-
-    @Test
-    void illegalBaseUrlFails() throws Exception {
-        var config = new FlareWebserviceClientSpringConfig();
-        var invalidUrl = "{ßöäü;";
-        var structuredQuery = "foo".getBytes();
-        ReflectionTestUtils.setField(config, "flareBaseUrl", invalidUrl);
-        flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.STRUCTURED_QUERY, true, 0d, 0d, 0, Duration.ofMillis(1)));
-
-        assertThatThrownBy(() -> flareWebserviceClient.requestFeasibility(structuredQuery))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Could not parse FLARE_BASE_URL '" + invalidUrl + "' as URI.");
-    }
-
-    @Test
-    void otherEvaluationStrategyFails() throws Exception {
-        var config = new FlareWebserviceClientSpringConfig();
-        var invalidUrl = "{ßöäü;";
-        var structuredQuery = "foo".getBytes();
-        ReflectionTestUtils.setField(config, "flareBaseUrl", invalidUrl);
-        flareWebserviceClient = config.flareWebserviceClient(httpClient, new EvaluationSettingsProviderImpl(
-                EvaluationStrategy.CQL, true, 0d, 0d, 0, Duration.ofMillis(1)));
-
-        assertThatThrownBy(() -> flareWebserviceClient.requestFeasibility(structuredQuery))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("EVALUATION_STRATEGY is not set to 'structured-query'.");
-    }
-
-    @Test
     void sendErrorGetsRethrownWithAdditionalInformation() throws Exception {
         var structuredQuery = "foo".getBytes();
         var error = new IOException("error-151930");
@@ -160,5 +106,10 @@ public class FlareWebserviceClientImplTest {
                 .hasMessage("Error sending %s request to flare webservice url '%s'.", POST,
                         flareBaseUrl.resolve("/query/execute"))
                 .hasCause(error);
+    }
+
+    @Test
+    void getConfiguredFlareBaseUrl() throws Exception {
+        assertThat(flareWebserviceClient.getFlareBaseUrl()).isEqualTo(flareBaseUrl);
     }
 }

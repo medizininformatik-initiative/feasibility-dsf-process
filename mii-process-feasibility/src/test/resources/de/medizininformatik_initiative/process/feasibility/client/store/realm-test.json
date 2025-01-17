@@ -600,7 +600,8 @@
   }, {
     "id" : "72a7f37e-b33f-4908-9ad9-33be0d4c1620",
     "username" : "service-account-account",
-    "emailVerified" : false,
+    "email":"foo@bar.baz",
+    "emailVerified" : true,
     "createdTimestamp" : 1619180273352,
     "enabled" : true,
     "totp" : false,

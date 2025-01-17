@@ -14,10 +14,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.*;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_LIBRARY;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_ID;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_REQUESTER_PARENT_ORGANIZATION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hl7.fhir.r4.model.Bundle.BundleType.TRANSACTION;
 import static org.hl7.fhir.r4.model.Bundle.HTTPVerb.POST;
@@ -28,13 +33,16 @@ public class StoreFeasibilityResources extends AbstractServiceDelegate implement
     private static final Pattern MEASURE_URL_PATTERN = Pattern.compile("(.+)/Measure/(.+)");
     private static final Pattern LIBRARY_URL_PATTERN = Pattern.compile("urn:uuid:(.+)");
 
-    private final IGenericClient storeClient;
+    private final Map<String, IGenericClient> storeClients;
     private final FeasibilityResourceCleaner cleaner;
+    private Map<String, Set<String>> networkStores;
 
-    public StoreFeasibilityResources(IGenericClient storeClient, ProcessPluginApi api, FeasibilityResourceCleaner cleaner) {
+    public StoreFeasibilityResources(Map<String, Set<String>> networkStores, Map<String, IGenericClient> storeClients,
+            ProcessPluginApi api, FeasibilityResourceCleaner cleaner) {
         super(api);
+        this.networkStores = networkStores;
 
-        this.storeClient = storeClient;
+        this.storeClients = storeClients;
         this.cleaner = cleaner;
     }
 
@@ -42,23 +50,32 @@ public class StoreFeasibilityResources extends AbstractServiceDelegate implement
     public void afterPropertiesSet() throws Exception {
         super.afterPropertiesSet();
 
-        Objects.requireNonNull(storeClient, "storeClient");
+        Objects.requireNonNull(storeClients, "storeClients");
         Objects.requireNonNull(cleaner, "cleaner");
     }
 
     @Override
     protected void doExecute(DelegateExecution execution, Variables variables) {
-        Measure measure = variables.getResource(VARIABLE_MEASURE);
-        Library library = variables.getResource(VARIABLE_LIBRARY);
+        var measure = (Measure) variables.getResource(VARIABLE_MEASURE).copy();
+        var library = (Library) variables.getResource(VARIABLE_LIBRARY).copy();
+        var requesterParentOrganization = variables.getString(VARIABLE_REQUESTER_PARENT_ORGANIZATION);
 
         cleaner.cleanLibrary(library);
         cleaner.cleanMeasure(measure);
 
         fixCanonical(measure, library);
 
-        var transactionResponse = storeResources(measure, library);
-
-        variables.setString(VARIABLE_MEASURE_ID, extractMeasureId(transactionResponse));
+        if (networkStores.containsKey(requesterParentOrganization)) {
+            networkStores.get(requesterParentOrganization)
+                    .parallelStream()
+                    .forEach(storeId -> {
+                        if (storeClients.containsKey(storeId)) {
+                            var transactionResponse = storeResources(storeClients.get(storeId), measure, library);
+                            variables.setString(VARIABLE_MEASURE_ID + "_" + storeId,
+                                    extractMeasureId(transactionResponse));
+                        }
+                    });
+        }
     }
 
     private void fixCanonical(Measure measure, Library library) {
@@ -66,7 +83,6 @@ public class StoreFeasibilityResources extends AbstractServiceDelegate implement
         var libraryUrlMatcher = LIBRARY_URL_PATTERN.matcher(library.getUrl());
         if (measureUrlMatcher.find() && libraryUrlMatcher.find()) {
             var base = measureUrlMatcher.group(1);
-            var measureId = measureUrlMatcher.group(2);
             var libraryId = libraryUrlMatcher.group(1);
             var libraryUrl = base + "/Library/" + libraryId;
             measure.setLibrary(new ArrayList<>());
@@ -81,7 +97,7 @@ public class StoreFeasibilityResources extends AbstractServiceDelegate implement
         }
     }
 
-    private Bundle storeResources(Measure measure, Library library) {
+    private Bundle storeResources(IGenericClient storeClient, Measure measure, Library library) {
         logger.info("Store Measure `{}` and Library `{}`", measure.getId(), library.getUrl());
 
         Bundle bundle = new Bundle().setType(TRANSACTION);

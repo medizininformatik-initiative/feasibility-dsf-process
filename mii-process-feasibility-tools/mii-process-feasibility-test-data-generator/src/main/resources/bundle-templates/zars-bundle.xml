@@ -25,6 +25,10 @@
                         <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
                         <code value="HRP"/>
                     </coding>
+                    <coding>
+                        <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                        <code value="DIC"/>
+                    </coding>
                 </type>
                 <name value="Test ZARS"/>
                 <endpoint>
@@ -455,6 +459,10 @@
                     <coding>
                         <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
                         <code value="HRP"/>
+                    </coding>
+                    <coding>
+                        <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
+                        <code value="DIC"/>
                     </coding>
                 </code>
                 <endpoint>

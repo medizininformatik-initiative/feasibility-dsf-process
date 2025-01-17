@@ -15,7 +15,7 @@ public class EvaluationStrategyTest {
     @Test
     public void testFromStrategyRepresentation_StrategyCaseDoesNotMatter() {
         var evaluationStrategy = EvaluationStrategy.fromStrategyRepresentation("strUCtured-QUerY");
-        assertEquals(EvaluationStrategy.STRUCTURED_QUERY, evaluationStrategy);
+        assertEquals(EvaluationStrategy.CCDL, evaluationStrategy);
     }
 
     @Test

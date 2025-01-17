@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.List;
+import java.util.Map;
 
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.FEASIBILITY_EXECUTE_PROCESS_ID;
 import static java.util.Objects.requireNonNull;
@@ -26,45 +27,51 @@ public class FeasibilityProcessPluginDeploymentStateListener
 
     private static final Logger logger = LoggerFactory.getLogger(FeasibilityProcessPluginDeploymentStateListener.class);
 
-    private EvaluationStrategy strategy;
-    private IGenericClient storeClient;
-    private FlareWebserviceClient flareWebserviceClient;
+    private Map<String, IGenericClient> storeClients;
+    private Map<String, FlareWebserviceClient> flareWebserviceClients;
 
-    public FeasibilityProcessPluginDeploymentStateListener(EvaluationStrategy strategy, IGenericClient storeClient,
-            FlareWebserviceClient flareWebserviceClient) {
-        this.strategy = strategy;
-        this.storeClient = storeClient;
-        this.flareWebserviceClient = flareWebserviceClient;
+    public FeasibilityProcessPluginDeploymentStateListener(Map<String, IGenericClient> storeClients,
+            Map<String, FlareWebserviceClient> flareWebserviceClients) {
+        this.storeClients = storeClients;
+        this.flareWebserviceClients = flareWebserviceClients;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        requireNonNull(storeClients);
+        requireNonNull(flareWebserviceClients);
     }
 
     @Override
     public void onProcessesDeployed(List<String> processes) {
         if (processes.contains(FEASIBILITY_EXECUTE_PROCESS_ID)) {
-            if (strategy.equals(EvaluationStrategy.CQL)) {
-                try {
-                    var statement = storeClient.capabilities().ofType(CapabilityStatement.class)
-                            .execute();
-                    logger.info("Feasibility plugin connection test to FHIR store ({} - {}) SUCCEEDED.",
-                            statement.getSoftware().getName(), statement.getSoftware().getVersion());
-                } catch (Exception e) {
-                    logger.error("Feasibility plugin connection test to FHIR store FAILED. Error: {} - {}",
-                            e.getClass().getName(), e.getMessage());
-                }
+            if (storeClients.size() > 0 || flareWebserviceClients.size() > 0) {
+                storeClients.entrySet().parallelStream().forEach(s -> {
+                    try {
+                        var statement = s.getValue().capabilities().ofType(CapabilityStatement.class).execute();
+                        var software = statement.getSoftware();
+                        logger.info("Feasibility plugin connection test to FHIR store '{}' ({} - {}) SUCCEEDED.",
+                                s.getKey(), software.getName(), software.getVersion());
+                    } catch (Exception e) {
+                        logger.error("Feasibility plugin connection test to FHIR store '{}' FAILED. Error: {} - {}",
+                                s.getKey(), e.getClass().getName(), e.getMessage());
+                    }
+                });
+
+                flareWebserviceClients.entrySet().parallelStream().forEach(f -> {
+                    try {
+                        f.getValue().testConnection();
+                        logger.info("Feasibility plugin connection test to FHIR store '{}' (Flare) SUCCEEDED.",
+                                f.getKey());
+                    } catch (Exception e) {
+                        logger.error("Feasibility plugin connection test to FHIR store '{}' FAILED. Error: {} - {}",
+                                f.getKey(), e.getClass().getName(), e.getMessage());
+                    }
+                });
             } else {
-                try {
-                    flareWebserviceClient.testConnection();
-                    logger.info("Feasibility plugin connection test to flare SUCCEEDED.");
-                } catch (Exception e) {
-                    logger.error("Feasibility plugin connection test to flare FAILED. Error: {} - {}",
-                            e.getClass().getName(), e.getMessage());
-                }
+                logger.warn("Feasibility Execute process activated, but no stores configured"
+                                + " in configuration file for executing feasibility queries.");
             }
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        requireNonNull(storeClient);
-        requireNonNull(flareWebserviceClient);
     }
 }

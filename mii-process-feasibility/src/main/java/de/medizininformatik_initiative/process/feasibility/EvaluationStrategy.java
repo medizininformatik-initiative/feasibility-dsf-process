@@ -1,7 +1,11 @@
 package de.medizininformatik_initiative.process.feasibility;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 /**
  * Determines which evaluation strategy to be used within the process.
@@ -15,14 +19,15 @@ public enum EvaluationStrategy {
     CQL("cql"),
 
     /**
-     * Measures will be evaluated using a structured query.
+     * Measures will be evaluated using a clinical cohort definition language query.
      */
-    STRUCTURED_QUERY("structured-query");
+    CCDL("ccdl", "structured-query");
 
-    private final String strategyRepresentation;
+    private List<String> strategyRepresentations;
 
-    EvaluationStrategy(String strategyRepresentation) {
-        this.strategyRepresentation = Objects.requireNonNull(strategyRepresentation);
+    EvaluationStrategy(String... strategyRepresentation) {
+        assert strategyRepresentation.length > 0;
+        this.strategyRepresentations = asList(strategyRepresentation);
     }
 
     /**
@@ -32,7 +37,7 @@ public enum EvaluationStrategy {
      */
     @Override
     public String toString() {
-        return strategyRepresentation;
+        return strategyRepresentations.get(0);
     }
 
     /**
@@ -42,9 +47,11 @@ public enum EvaluationStrategy {
      * @return The appropriate evaluation strategy instance.
      * @throws IllegalArgumentException If the given strategy representation is not supported.
      */
+    @JsonCreator
     public static EvaluationStrategy fromStrategyRepresentation(String strategyRepresentation) {
         return Arrays.stream(EvaluationStrategy.values())
-                .filter(es -> es.strategyRepresentation.equalsIgnoreCase(strategyRepresentation))
+                .filter(es -> es.strategyRepresentations.stream()
+                        .anyMatch(r -> r.equalsIgnoreCase(strategyRepresentation)))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No known evaluation strategy with the representation: " + strategyRepresentation));
     }

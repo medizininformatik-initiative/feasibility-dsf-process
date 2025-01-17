@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0drkcb5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.10.0">
-  <bpmn:process id="medizininformatik-initiativede_feasibilityExecute" isExecutable="true" camunda:versionTag="#{version}">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0drkcb5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:process id="medizininformatik-initiativede_feasibilityExecute" name="feasibility execute" isExecutable="true" camunda:versionTag="#{version}">
     <bpmn:startEvent id="StartEvent" name="start">
       <bpmn:outgoing>Flow_1f6bge9</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0sjtzj6" messageRef="Message_1yz2a31" />
@@ -13,7 +13,7 @@
       <bpmn:incoming>Flow_11lpcfm</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0ascyjc</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="evaluateMeasure" name="evaluate CQL measure" camunda:class="de.medizininformatik_initiative.process.feasibility.service.EvaluateCqlMeasure">
+    <bpmn:serviceTask id="evaluateCQLMeasure" name="evaluate CQL measure" camunda:class="de.medizininformatik_initiative.process.feasibility.service.EvaluateCQLMeasure">
       <bpmn:incoming>Flow_1cad9ed</bpmn:incoming>
       <bpmn:outgoing>Flow_1qdam0i</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -22,25 +22,16 @@
       <bpmn:incoming>Flow_09g5hz4</bpmn:incoming>
       <bpmn:outgoing>Flow_1cad9ed</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1cad9ed" sourceRef="storeFeasibilityResources" targetRef="evaluateMeasure" />
+    <bpmn:sequenceFlow id="Flow_1cad9ed" sourceRef="storeFeasibilityResources" targetRef="evaluateCQLMeasure" />
     <bpmn:serviceTask id="storeMeasureReport" name="store measure report" camunda:class="de.medizininformatik_initiative.process.feasibility.service.StoreMeasureReport">
       <bpmn:incoming>Flow_1lvwaa9</bpmn:incoming>
       <bpmn:incoming>Flow_10dmu4o</bpmn:incoming>
       <bpmn:outgoing>Flow_11lpcfm</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_11lpcfm" sourceRef="storeMeasureReport" targetRef="selectResponseTarget" />
-    <bpmn:exclusiveGateway id="Gateway_1kfqiko" name="configured for?">
-      <bpmn:incoming>Flow_11cnoe1</bpmn:incoming>
-      <bpmn:outgoing>Flow_09g5hz4</bpmn:outgoing>
-      <bpmn:outgoing>Flow_0gowl5w</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_09g5hz4" name="CQL" sourceRef="Gateway_1kfqiko" targetRef="storeFeasibilityResources">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('evaluation-strategy')=='cql'}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0gowl5w" name="Structured Query" sourceRef="Gateway_1kfqiko" targetRef="evaluateStructuredQueryMeasure">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('evaluation-strategy')=='structured-query'}</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:serviceTask id="evaluateStructuredQueryMeasure" name="evaluate Structured Query measure" camunda:class="de.medizininformatik_initiative.process.feasibility.service.EvaluateStructuredQueryMeasure">
+    <bpmn:sequenceFlow id="Flow_09g5hz4" name="CQL" sourceRef="Gateway_1kfqiko" targetRef="storeFeasibilityResources" />
+    <bpmn:sequenceFlow id="Flow_0gowl5w" name="CCDL" sourceRef="Gateway_1kfqiko" targetRef="evaluateCCDLMeasure" />
+    <bpmn:serviceTask id="evaluateCCDLMeasure" name="evaluate CCDL measure" camunda:class="de.medizininformatik_initiative.process.feasibility.service.EvaluateCCDLMeasure">
       <bpmn:incoming>Flow_0gowl5w</bpmn:incoming>
       <bpmn:outgoing>Flow_1cs9290</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -53,13 +44,12 @@
       <bpmn:outgoing>Flow_07fkz0p</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:exclusiveGateway id="gatewayObfuscate" name="shall be obfuscated?">
-      <bpmn:incoming>Flow_1qdam0i</bpmn:incoming>
-      <bpmn:incoming>Flow_1cs9290</bpmn:incoming>
+      <bpmn:incoming>Flow_0tmjqu8</bpmn:incoming>
       <bpmn:outgoing>Flow_0r37nze</bpmn:outgoing>
       <bpmn:outgoing>Flow_1lvwaa9</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_1qdam0i" sourceRef="evaluateMeasure" targetRef="gatewayObfuscate" />
-    <bpmn:sequenceFlow id="Flow_1cs9290" sourceRef="evaluateStructuredQueryMeasure" targetRef="gatewayObfuscate" />
+    <bpmn:sequenceFlow id="Flow_1qdam0i" sourceRef="evaluateCQLMeasure" targetRef="Gateway_0dhwg87" />
+    <bpmn:sequenceFlow id="Flow_1cs9290" sourceRef="evaluateCCDLMeasure" targetRef="Gateway_0dhwg87" />
     <bpmn:sequenceFlow id="Flow_0r37nze" name="yes" sourceRef="gatewayObfuscate" targetRef="obfuscateEvaluationResult">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable('evaluation-obfuscation')==true}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
@@ -113,6 +103,22 @@
       </bpmn:messageEventDefinition>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_0ascyjc" sourceRef="selectResponseTarget" targetRef="sendDicResponse" />
+    <bpmn:parallelGateway id="Gateway_1kfqiko">
+      <bpmn:incoming>Flow_11cnoe1</bpmn:incoming>
+      <bpmn:outgoing>Flow_09g5hz4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0gowl5w</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:parallelGateway id="Gateway_0dhwg87">
+      <bpmn:incoming>Flow_1qdam0i</bpmn:incoming>
+      <bpmn:incoming>Flow_1cs9290</bpmn:incoming>
+      <bpmn:outgoing>Flow_056u9g8</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="MergeMeasureResults" name="merge measure results" camunda:class="de.medizininformatik_initiative.process.feasibility.service.MergeMeasureResults">
+      <bpmn:incoming>Flow_056u9g8</bpmn:incoming>
+      <bpmn:outgoing>Flow_0tmjqu8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_056u9g8" sourceRef="Gateway_0dhwg87" targetRef="MergeMeasureResults" />
+    <bpmn:sequenceFlow id="Flow_0tmjqu8" sourceRef="MergeMeasureResults" targetRef="gatewayObfuscate" />
   </bpmn:process>
   <bpmn:message id="Message_1yz2a31" name="feasibilityExecuteMessage" />
   <bpmn:message id="Message_1dr71re" name="feasibilitySingleDicResultMessage" />
@@ -127,43 +133,32 @@
       <bpmndi:BPMNShape id="ServiceTask_0b8j3ka_di" bpmnElement="downloadFeasibilityResources">
         <dc:Bounds x="670" y="162" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_10xdh63_di" bpmnElement="sendDicResponse">
-        <dc:Bounds x="1562" y="272" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1549" y="315" width="67" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ServiceTask_15aifhd_di" bpmnElement="selectResponseTarget">
-        <dc:Bounds x="1400" y="250" width="100" height="80" />
+        <dc:Bounds x="1690" y="250" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_0u5pb4i_di" bpmnElement="evaluateMeasure">
+      <bpmndi:BPMNShape id="ServiceTask_0u5pb4i_di" bpmnElement="evaluateCQLMeasure">
         <dc:Bounds x="1020" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_01mo7df_di" bpmnElement="storeFeasibilityResources">
         <dc:Bounds x="880" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0yfzrja_di" bpmnElement="storeMeasureReport">
-        <dc:Bounds x="1250" y="250" width="100" height="80" />
+        <dc:Bounds x="1540" y="250" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1kfqiko_di" bpmnElement="Gateway_1kfqiko" isMarkerVisible="true">
-        <dc:Bounds x="815" y="177" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="873" y="195" width="74" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1rmldcf_di" bpmnElement="evaluateStructuredQueryMeasure">
+      <bpmndi:BPMNShape id="Activity_1rmldcf_di" bpmnElement="evaluateCCDLMeasure">
         <dc:Bounds x="950" y="250" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_02bp35f_di" bpmnElement="obfuscateEvaluationResult">
-        <dc:Bounds x="1250" y="80" width="100" height="80" />
+        <dc:Bounds x="1540" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0lqxwo5_di" bpmnElement="setupEvaluationSettings">
         <dc:Bounds x="230" y="162" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_01hxgve_di" bpmnElement="gatewayObfuscate" isMarkerVisible="true">
-        <dc:Bounds x="1135" y="177" width="50" height="50" />
+        <dc:Bounds x="1415" y="177" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1070" y="188" width="60" height="27" />
+          <dc:Bounds x="1470" y="188" width="60" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1l9n5rw_di" bpmnElement="limitRequestRate">
@@ -184,10 +179,25 @@
           <dc:Bounds x="538" y="485" width="69" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="SequenceFlow_0ascyjc_di" bpmnElement="SequenceFlow_0ascyjc">
-        <di:waypoint x="1500" y="290" />
-        <di:waypoint x="1562" y="290" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_10xdh63_di" bpmnElement="sendDicResponse">
+        <dc:Bounds x="1852" y="272" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1839" y="315" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1osy2l3_di" bpmnElement="Gateway_1kfqiko">
+        <dc:Bounds x="815" y="177" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="873" y="195" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ts0qn9_di" bpmnElement="Gateway_0dhwg87">
+        <dc:Bounds x="1135" y="177" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1chxoed_di" bpmnElement="MergeMeasureResults">
+        <dc:Bounds x="1250" y="162" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_11cnoe1_di" bpmnElement="Flow_11cnoe1">
         <di:waypoint x="770" y="202" />
         <di:waypoint x="815" y="202" />
@@ -197,8 +207,8 @@
         <di:waypoint x="1020" y="120" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11lpcfm_di" bpmnElement="Flow_11lpcfm">
-        <di:waypoint x="1350" y="290" />
-        <di:waypoint x="1400" y="290" />
+        <di:waypoint x="1640" y="290" />
+        <di:waypoint x="1690" y="290" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_09g5hz4_di" bpmnElement="Flow_09g5hz4">
         <di:waypoint x="840" y="177" />
@@ -213,40 +223,38 @@
         <di:waypoint x="840" y="290" />
         <di:waypoint x="950" y="290" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="748" y="283" width="85" height="14" />
+          <dc:Bounds x="806" y="283" width="30" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qdam0i_di" bpmnElement="Flow_1qdam0i">
         <di:waypoint x="1120" y="120" />
         <di:waypoint x="1160" y="120" />
-        <di:waypoint x="1160" y="177" />
+        <di:waypoint x="1160" y="170" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1cs9290_di" bpmnElement="Flow_1cs9290">
         <di:waypoint x="1050" y="290" />
         <di:waypoint x="1160" y="290" />
-        <di:waypoint x="1160" y="227" />
+        <di:waypoint x="1160" y="230" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0r37nze_di" bpmnElement="Flow_0r37nze">
-        <di:waypoint x="1185" y="202" />
-        <di:waypoint x="1210" y="202" />
-        <di:waypoint x="1210" y="120" />
-        <di:waypoint x="1250" y="120" />
+        <di:waypoint x="1440" y="177" />
+        <di:waypoint x="1440" y="120" />
+        <di:waypoint x="1540" y="120" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1181" y="113" width="18" height="14" />
+          <dc:Bounds x="1499" y="93" width="18" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1lvwaa9_di" bpmnElement="Flow_1lvwaa9">
-        <di:waypoint x="1185" y="202" />
-        <di:waypoint x="1210" y="202" />
-        <di:waypoint x="1210" y="290" />
-        <di:waypoint x="1250" y="290" />
+        <di:waypoint x="1440" y="227" />
+        <di:waypoint x="1440" y="290" />
+        <di:waypoint x="1540" y="290" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1183" y="283" width="13" height="14" />
+          <dc:Bounds x="1501" y="303" width="13" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_10dmu4o_di" bpmnElement="Flow_10dmu4o">
-        <di:waypoint x="1300" y="160" />
-        <di:waypoint x="1300" y="250" />
+        <di:waypoint x="1590" y="160" />
+        <di:waypoint x="1590" y="250" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0h1fgqi_di" bpmnElement="Flow_0h1fgqi">
         <di:waypoint x="595" y="202" />
@@ -277,6 +285,18 @@
       <bpmndi:BPMNEdge id="Flow_07fkz0p_di" bpmnElement="Flow_07fkz0p">
         <di:waypoint x="330" y="202" />
         <di:waypoint x="390" y="202" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0ascyjc_di" bpmnElement="SequenceFlow_0ascyjc">
+        <di:waypoint x="1790" y="290" />
+        <di:waypoint x="1852" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_056u9g8_di" bpmnElement="Flow_056u9g8">
+        <di:waypoint x="1185" y="202" />
+        <di:waypoint x="1250" y="202" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0tmjqu8_di" bpmnElement="Flow_0tmjqu8">
+        <di:waypoint x="1350" y="202" />
+        <di:waypoint x="1415" y="202" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

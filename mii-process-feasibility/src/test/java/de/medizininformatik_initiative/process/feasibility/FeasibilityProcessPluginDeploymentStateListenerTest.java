@@ -18,6 +18,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.FEASIBILITY_EXECUTE_PROCESS_ID;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.FEASIBILITY_REQUEST_PROCESS_ID;
@@ -57,19 +58,20 @@ public class FeasibilityProcessPluginDeploymentStateListenerTest {
     @Test
     @DisplayName("connection test is not executed when no process is deployed.")
     void noConnectionTestIfNoProcessDeployed() throws Exception {
-        var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                EvaluationStrategy.CQL, storeClient, flareClient);
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of("foo", storeClient),
+                Map.of("bar", flareClient));
 
         listener.onProcessesDeployed(List.of());
 
+        verify(storeClient, never()).capabilities();
         verify(flareClient, never()).requestFeasibility(any(byte[].class));
     }
 
     @Test
     @DisplayName("connection test is not executed when 'feasibilityExecute' process is not deployed.")
     void noConnectionTestIfExecuteProcessIsNotDeployed() throws Exception {
-        var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                EvaluationStrategy.CQL, storeClient, flareClient);
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of("foo", storeClient),
+                Map.of("bar", flareClient));
 
         listener.onProcessesDeployed(List.of("foo", FEASIBILITY_REQUEST_PROCESS_ID, "bar"));
 
@@ -79,36 +81,36 @@ public class FeasibilityProcessPluginDeploymentStateListenerTest {
     @Test
     @DisplayName("flare client connection test succeeds when evaluation strategy is 'structured-query' and no error occurs")
     void flareClientConnectionTestSucceeds() throws Exception {
+        var storeId = "foo";
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of(), Map.of(storeId, flareClient));
 
-            var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                    EvaluationStrategy.STRUCTURED_QUERY, storeClient, flareClient);
+        listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
 
-            listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
-
-            verify(flareClient).testConnection();
-            assertThat(out.toString(), containsString("Feasibility plugin connection test to flare SUCCEEDED."));
+        verify(flareClient).testConnection();
+        assertThat(out.toString(),
+                containsString("Feasibility plugin connection test to FHIR store '%s' (Flare) SUCCEEDED."
+                        .formatted(storeId)));
     }
 
     @Test
     @DisplayName("store client connection test succeeds when evaluation strategy is 'cql' and no error occurs")
     void storeClientConnectionTestSucceeds() throws Exception {
-            var softwareName = "software-213030";
-            var softwareVersion = "version-213136";
-            var software = new CapabilityStatementSoftwareComponent()
-                    .setName(softwareName)
-                    .setVersion(softwareVersion);
-            var statement = new CapabilityStatement().setSoftware(software);
-            when(storeClient.capabilities()).thenReturn(untypedFetch);
-            when(untypedFetch.ofType(CapabilityStatement.class)).thenReturn(typedFetch);
-            when(typedFetch.execute()).thenReturn(statement);
+        var softwareName = "software-213030";
+        var softwareVersion = "version-213136";
+        var software = new CapabilityStatementSoftwareComponent()
+                .setName(softwareName)
+                .setVersion(softwareVersion);
+        var statement = new CapabilityStatement().setSoftware(software);
+        var storeId = "foo";
+        when(storeClient.capabilities()).thenReturn(untypedFetch);
+        when(untypedFetch.ofType(CapabilityStatement.class)).thenReturn(typedFetch);
+        when(typedFetch.execute()).thenReturn(statement);
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of(storeId, storeClient), Map.of());
 
-            var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                    EvaluationStrategy.CQL, storeClient, flareClient);
-
-            listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
-            assertThat(out.toString(),
-                    containsString(format("Feasibility plugin connection test to FHIR store (%s - %s) SUCCEEDED.",
-                            softwareName, softwareVersion)));
+        listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
+        assertThat(out.toString(),
+                containsString("Feasibility plugin connection test to FHIR store '%s' (%s - %s) SUCCEEDED."
+                        .formatted(storeId, softwareName, softwareVersion)));
     }
 
     @Test
@@ -117,14 +119,14 @@ public class FeasibilityProcessPluginDeploymentStateListenerTest {
         var errorMessage = "error-223236";
         var exception = new IOException(errorMessage);
         doThrow(exception).when(flareClient).testConnection();
-        var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                EvaluationStrategy.STRUCTURED_QUERY, storeClient, flareClient);
+        String storeId = "foo";
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of(), Map.of(storeId, flareClient));
 
         listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
 
         assertThat(out.toString(),
-                containsString(format("Feasibility plugin connection test to flare FAILED. Error: %s - %s",
-                exception.getClass().getName(), errorMessage)));
+                containsString(format("Feasibility plugin connection test to FHIR store '%s' FAILED. Error: %s - %s",
+                        storeId, exception.getClass().getName(), errorMessage)));
     }
 
     @Test
@@ -132,17 +134,17 @@ public class FeasibilityProcessPluginDeploymentStateListenerTest {
     void storeClientConnectionTestFails() throws Exception {
         var errorMessage = "error-223622";
         var exception = new RuntimeException(errorMessage);
+        var storeId = "foo";
         when(storeClient.capabilities()).thenReturn(untypedFetch);
         when(untypedFetch.ofType(CapabilityStatement.class)).thenReturn(typedFetch);
         doThrow(exception).when(typedFetch).execute();
 
-        var listener = new FeasibilityProcessPluginDeploymentStateListener(
-                EvaluationStrategy.CQL, storeClient, flareClient);
+        var listener = new FeasibilityProcessPluginDeploymentStateListener(Map.of(storeId, storeClient), Map.of());
 
         listener.onProcessesDeployed(List.of(FEASIBILITY_EXECUTE_PROCESS_ID));
         assertThat(out.toString(),
-                containsString(format("Feasibility plugin connection test to FHIR store FAILED. Error: %s - %s",
-                        exception.getClass().getName(), errorMessage)));
+                containsString(format("Feasibility plugin connection test to FHIR store '%s' FAILED. Error: %s - %s",
+                        storeId, exception.getClass().getName(), errorMessage)));
 
     }
 }

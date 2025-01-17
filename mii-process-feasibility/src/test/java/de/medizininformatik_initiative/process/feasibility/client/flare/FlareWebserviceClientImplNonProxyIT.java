@@ -9,6 +9,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,18 +21,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Testcontainers
 public class FlareWebserviceClientImplNonProxyIT extends FlareWebserviceClientImplBaseIT {
 
-    @Autowired
-    protected FlareWebserviceClient flareClient;
+    private static final String STORE_ID = "foo";
+
+    private static URL feasibilityConfig = getResource("nonProxy.yml");
+
+    @Autowired protected Map<String, FlareWebserviceClient> flareClients;
 
     @DynamicPropertySource
-    static void dynamicProperties(DynamicPropertyRegistry registry) {
+    static void dynamicProperties(DynamicPropertyRegistry registry) throws IOException {
         var flareHost = flare.getHost();
         var flarePort = flare.getFirstMappedPort();
 
-        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.evaluation.strategy",
-                () -> "structured-query");
-        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.flare.base_url",
-                () -> String.format("http://%s:%s/", flareHost, flarePort));
+        registry.add("de.medizininformatik_initiative.feasibility_dsf_process.configuration.file",
+                () -> feasibilityConfig.getPath());
+        registry.add("STORE_ID", () -> "foo");
+        registry.add("BASE_URL", () -> "http://%s:%s/".formatted(flareHost, flarePort));
     }
 
     @Test
@@ -38,7 +43,7 @@ public class FlareWebserviceClientImplNonProxyIT extends FlareWebserviceClientIm
         var rawStructuredQuery = this.getClass().getResource("valid-structured-query.json")
                 .openStream().readAllBytes();
 
-        var feasibility = assertDoesNotThrow(() -> flareClient.requestFeasibility(rawStructuredQuery));
+        var feasibility = assertDoesNotThrow(() -> flareClients.get(STORE_ID).requestFeasibility(rawStructuredQuery));
         assertEquals(0, feasibility);
     }
 }

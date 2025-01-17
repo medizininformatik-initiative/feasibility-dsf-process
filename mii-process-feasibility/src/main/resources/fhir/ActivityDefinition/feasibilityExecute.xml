@@ -15,44 +15,20 @@
         </extension>
         <extension url="requester">
             <valueCoding>
-                <extension
-                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
-                    <extension url="parent-organization">
-                        <valueIdentifier>
-                            <system value="http://dsf.dev/sid/organization-identifier"/>
-                            <value value="medizininformatik-initiative.de"/>
-                        </valueIdentifier>
-                    </extension>
-                    <extension url="organization-role">
-                        <valueCoding>
-                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
-                            <code value="HRP"/>
-                        </valueCoding>
-                    </extension>
-                </extension>
-                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
-                <code value="REMOTE_ROLE"/>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization" />
+                <code value="REMOTE_ALL"/>
+            </valueCoding>
+        </extension>
+        <extension url="requester">
+            <valueCoding>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization" />
+                <code value="LOCAL_ALL"/>
             </valueCoding>
         </extension>
         <extension url="recipient">
             <valueCoding>
-                <extension
-                        url="http://dsf.dev/fhir/StructureDefinition/extension-process-authorization-parent-organization-role">
-                    <extension url="parent-organization">
-                        <valueIdentifier>
-                            <system value="http://dsf.dev/sid/organization-identifier"/>
-                            <value value="medizininformatik-initiative.de"/>
-                        </valueIdentifier>
-                    </extension>
-                    <extension url="organization-role">
-                        <valueCoding>
-                            <system value="http://dsf.dev/fhir/CodeSystem/organization-role"/>
-                            <code value="DIC"/>
-                        </valueCoding>
-                    </extension>
-                </extension>
-                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization"/>
-                <code value="LOCAL_ROLE"/>
+                <system value="http://dsf.dev/fhir/CodeSystem/process-authorization" />
+                <code value="LOCAL_ALL"/>
             </valueCoding>
         </extension>
     </extension>

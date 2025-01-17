@@ -1,0 +1,10 @@
+stores:
+  ${STORE_ID}:
+    baseUrl: ${BASE_URL}
+    evaluationStrategy: ccdl
+
+networks:
+  medizininformatik-initiative.de:
+    obfuscate: true
+    stores:
+    - ${STORE_ID}

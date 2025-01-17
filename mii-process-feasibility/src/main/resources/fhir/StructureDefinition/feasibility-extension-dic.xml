@@ -41,7 +41,7 @@
             <min value="1"/>
             <type>
                 <code value="Reference"/>
-                <targetProfile value="http://dsf.dev/fhir/StructureDefinition/highmed-organization"/>
+                <targetProfile value="http://dsf.dev/fhir/StructureDefinition/organization"/>
             </type>
         </element>
         <element id="Extension.value[x].reference">

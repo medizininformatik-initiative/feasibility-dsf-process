@@ -14,13 +14,28 @@ mvn clean package
 
 ## Usage
 
-You can test the processes by following the [README](mii-process-feasibility-docker-test-setup/README.md) in
-the `mii-process-feasibility-docker-test-setup` directory.
+For running the feasibility processes you need a working and up-to-date DSF instance by following the
+[DSF installation guide][2]. The processes are deployed to the DSF BPE component by adding the JAR file of the latest
+stable release of the feasibility process plugin to your `process` folder of the DSF BPE. The processes have to be
+configured as outlined in the configuration section in the [feasibility process overview][3].
+
+### Update
+
+For updating the feasibility processes to the latest stable version do the following steps:
+
+  * stop your running DSF BPE instance
+  * replace the existing JAR file of the feasibility processes plugin in your `process` folder of you DSF BPE with the JAR
+    file of the latest stable release of the feasibility process plugin
+  * compare and adjust your existing processes configuration to the configuration options documented in the
+    [feasibility process overview][3]
+
+You can test the processes workflows locally by following the [README][4]] in the
+`mii-process-feasibility-docker-test-setup` directory.
 
 ## Edit
-You should edit the *.bpmn files only with the standalone Camunda Modeller, because of different
+
+You should edit the *.bpmn files only with the standalone [Camunda Modeler][5], because of different
 formatting of the bpmn tools and plugins.
-https://camunda.com/download/modeler/
 
 ## License
 
@@ -35,4 +50,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
 language governing permissions and limitations under the License.
 
-[1]: <https://github.com/datasharingframework/dsf>
+[1]: <https://dsf.dev>
+[2]: <https://dsf.dev/stable/maintain/install.html>
+[3]: <mii-process-feasibility/README.md#configuration>
+[4]: <mii-process-feasibility-docker-test-setup/README.md>
+[5]: <https://camunda.com/download/modeler/>

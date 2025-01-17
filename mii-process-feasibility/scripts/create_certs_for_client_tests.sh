@@ -29,9 +29,9 @@ openssl x509 -req -days 7 -sha256 -in ${TARGET_DIR}/server_cert_csr.pem \
   -copy_extensions copyall \
   -out ${TARGET_DIR}/server_cert.pem
 
-  # Server cert chain
-  cat ${TARGET_DIR}/server_cert.pem > ${TARGET_DIR}/server_cert_chain.pem
-  cat ${TARGET_DIR}/ca.pem >> ${TARGET_DIR}/server_cert_chain.pem
+# Server cert chain
+cat ${TARGET_DIR}/server_cert.pem > ${TARGET_DIR}/server_cert_chain.pem
+cat ${TARGET_DIR}/ca.pem >> ${TARGET_DIR}/server_cert_chain.pem
 
 # Issue client certificate using said self signed CA
 openssl req -nodes -sha256 -new -newkey rsa:2048 -keyout ${TARGET_DIR}/client_cert_key.pem \
@@ -44,18 +44,14 @@ openssl x509 -req -days 7 -sha256 -in ${TARGET_DIR}/client_cert_csr.pem \
   -CAcreateserial \
   -out ${TARGET_DIR}/client_cert.pem
 
-  # Client Key Store
-  openssl pkcs12 -export -out ${TARGET_DIR}/client_key_store.p12 \
-    -inkey ${TARGET_DIR}/client_cert_key.pem \
-    -in ${TARGET_DIR}/client_cert.pem \
-    -passout pass:changeit
+# Client Key Store
+openssl pkcs12 -export -out ${TARGET_DIR}/client_key_store.p12 \
+  -inkey ${TARGET_DIR}/client_cert_key.pem \
+  -in ${TARGET_DIR}/client_cert.pem \
+  -passout pass:changeit
 
 ## CLEANUP
 rm -f ${BASE_DIR}/.srl
 rm -f ${TARGET_DIR}/ca.srl
 rm -f ${TARGET_DIR}/ca_key.pem
-rm -f ${TARGET_DIR}/server_cert_csr.pem
 rm -f ${TARGET_DIR}/server_cert.pem
-rm -f ${TARGET_DIR}/client_cert_csr.pem
-rm -f ${TARGET_DIR}/client_cert_key.pem
-rm -f ${TARGET_DIR}/client_cert.pem

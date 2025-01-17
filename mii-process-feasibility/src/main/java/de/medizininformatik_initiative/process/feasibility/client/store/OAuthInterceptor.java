@@ -18,6 +18,7 @@ import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.util.tls.TLSUtils;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import org.apache.http.HttpRequest;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.security.UnrecoverableKeyException;
 import java.util.Base64;
 import java.util.Optional;
 
-final class OAuthInterceptor implements IClientInterceptor {
+public final class OAuthInterceptor implements IClientInterceptor {
 
     private static final String HEADER_PROXY_AUTHORIZATION = "Proxy-Authorization";
     private static final int TOKEN_EXPIRY_THRESHOLD = 10000;
@@ -123,6 +124,12 @@ final class OAuthInterceptor implements IClientInterceptor {
     public void interceptRequest(IHttpRequest theRequest) {
         theRequest.addHeader(Constants.HEADER_AUTHORIZATION,
                 Constants.HEADER_AUTHORIZATION_VALPREFIX_BEARER + getToken());
+    }
+
+    public HttpRequest interceptRequest(HttpRequest request) {
+        request.addHeader(Constants.HEADER_AUTHORIZATION,
+                Constants.HEADER_AUTHORIZATION_VALPREFIX_BEARER + getToken());
+        return request;
     }
 
     @Override
