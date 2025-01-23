@@ -2,7 +2,13 @@ package de.medizininformatik_initiative.process.feasibility.client.store;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import okhttp3.*;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -10,10 +16,11 @@ import okio.BufferedSink;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.HttpHeaders.TRANSFER_ENCODING;
@@ -39,8 +46,15 @@ public class MockServerProxyDispatcher extends Dispatcher {
                 return failedResponse();
             }
         }
+        var method = req.getMethod();
+        var requestBody = extractRequestBody(req);
+        var headers = req.getHeaders();
 
-        var targetedUrl = target.newBuilder()
+        return requestTarget(target, method, requestBody, headers);
+    }
+
+    MockResponse requestTarget(HttpUrl url, String method, RequestBody body, Headers headers) {
+        var targetedUrl = url.newBuilder()
                 .scheme(targetServiceUrl.scheme())
                 .host(targetServiceUrl.host())
                 .port(targetServiceUrl.port())
@@ -48,10 +62,9 @@ public class MockServerProxyDispatcher extends Dispatcher {
 
         var reqBuilder = new Request.Builder()
                 .url(targetedUrl)
-                .headers(req.getHeaders())
-                .removeHeader(HttpHeaders.HOST);
-        addRequestBody(req, reqBuilder);
-
+                .headers(headers)
+                .removeHeader(HttpHeaders.HOST)
+                .method(method, body);
 
         Response targetResponse;
         try {
@@ -84,9 +97,9 @@ public class MockServerProxyDispatcher extends Dispatcher {
         return response;
     }
 
-    private void addRequestBody(@Nonnull RecordedRequest req, Request.Builder reqBuilder) {
+    RequestBody extractRequestBody(@Nonnull RecordedRequest req) {
         if (req.getBodySize() != 0) {
-            reqBuilder.method(req.getMethod(), new RequestBody() {
+            return new RequestBody() {
                 @Nullable
                 @Override
                 public MediaType contentType() {
@@ -97,11 +110,13 @@ public class MockServerProxyDispatcher extends Dispatcher {
                 public void writeTo(@Nonnull BufferedSink sink) throws IOException {
                     req.getBody().clone().readAll(sink);
                 }
-            });
+            };
+        } else {
+            return null;
         }
     }
 
-    private MockResponse failedResponse() {
+    MockResponse failedResponse() {
         return new MockResponse()
                 .setStatus("Rev Proxy Error")
                 .setResponseCode(SC_INTERNAL_SERVER_ERROR);

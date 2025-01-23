@@ -5,16 +5,24 @@ import dev.dsf.bpe.v1.ProcessPluginApi;
 import dev.dsf.bpe.v1.activity.AbstractServiceDelegate;
 import dev.dsf.bpe.v1.variables.Variables;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.DateType;
 import org.hl7.fhir.r4.model.MeasureReport;
+import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.Parameters.ParametersParameterComponent;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.StringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.HEADER_PREFER;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.HEADER_PREFER_RESPOND_ASYNC;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_PERIOD_END;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_PERIOD_START;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_TYPE_POPULATION;
@@ -47,21 +55,54 @@ public class EvaluateCqlMeasure extends AbstractServiceDelegate implements Initi
     protected void doExecute(DelegateExecution execution, Variables variables) {
         var measureId = variables.getString(VARIABLE_MEASURE_ID);
 
-        var report = executeEvaluateMeasure(measureId);
-        validateMeasureReport(report);
-
-        variables.setResource(VARIABLE_MEASURE_REPORT, report);
+        var response = executeEvaluateMeasure(measureId);
+        var report = response.filter(Parameters::hasParameter)
+                .map(Parameters::getParameterFirstRep)
+                .filter(ParametersParameterComponent::hasResource)
+                .map(ParametersParameterComponent::getResource)
+                .flatMap(this::toMeasureReport);
+        if (report.isEmpty()) {
+            logger.error("Failed to evaluate measure {}", measureId);
+            throw new RuntimeException("Failed to extract MeasureReport from response");
+        }
+        validateMeasureReport(report.get());
+        variables.setResource(VARIABLE_MEASURE_REPORT, report.get());
     }
 
-    private MeasureReport executeEvaluateMeasure(String measureId) {
+    private Optional<MeasureReport> toMeasureReport(Resource r) {
+        if (r instanceof MeasureReport) {
+            return Optional.of((MeasureReport) r);
+        } else if (r instanceof Bundle) {
+            var report = Optional.of((Bundle) r)
+                    .filter(Bundle::hasEntry)
+                    .map(Bundle::getEntryFirstRep)
+                    .filter(Bundle.BundleEntryComponent::hasResource)
+                    .map(Bundle.BundleEntryComponent::getResource)
+                    .filter(MeasureReport.class::isInstance)
+                    .map(MeasureReport.class::cast);
+            if (report.isEmpty()) {
+                logger.error("Failed to extract MeasureReport from Bundle");
+            }
+            return report;
+        } else if (r instanceof OperationOutcome) {
+            logger.error("Operation failed: {}", ((OperationOutcome) r).getIssueFirstRep().getDiagnostics());
+            return Optional.empty();
+        } else {
+            logger.error("Response contains unexpected resource type: {}", r.getClass().getSimpleName());
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Parameters> executeEvaluateMeasure(String measureId) {
         logger.debug("Evaluate measure {}", measureId);
-        return storeClient.operation().onInstance("Measure/" + measureId).named("evaluate-measure")
+        return Optional.ofNullable(storeClient.operation().onInstance("Measure/" + measureId).named("evaluate-measure")
                 .withParameter(Parameters.class, "periodStart", new DateType(MEASURE_REPORT_PERIOD_START))
                 .andParameter("periodEnd", new DateType(MEASURE_REPORT_PERIOD_END))
                 .andParameter("reportType", new StringType(MEASURE_REPORT_TYPE_POPULATION))
                 .useHttpGet()
-                .returnResourceType(MeasureReport.class)
-                .execute();
+                .preferResponseTypes(List.of(MeasureReport.class, Bundle.class, OperationOutcome.class))
+                .withAdditionalHeader(HEADER_PREFER, HEADER_PREFER_RESPOND_ASYNC)
+                .execute());
     }
 
     private void validateMeasureReport(MeasureReport report) {
