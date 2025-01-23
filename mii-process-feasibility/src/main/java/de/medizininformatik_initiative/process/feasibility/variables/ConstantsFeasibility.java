@@ -33,4 +33,7 @@ public interface ConstantsFeasibility {
     String MEASURE_REPORT_TYPE_POPULATION = "population";
 
     int CLIENT_TIMEOUT_DEFAULT = 300000;
+
+    String HEADER_PREFER = "Prefer";
+    String HEADER_PREFER_RESPOND_ASYNC = "respond-async";
 }

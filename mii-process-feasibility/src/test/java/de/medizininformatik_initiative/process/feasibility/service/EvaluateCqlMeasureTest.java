@@ -1,11 +1,18 @@
 package de.medizininformatik_initiative.process.feasibility.service;
 
 import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.gclient.IOperationUntypedWithInput;
 import dev.dsf.bpe.v1.variables.Variables;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.DateType;
+import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.MeasureReport;
+import org.hl7.fhir.r4.model.Medication;
+import org.hl7.fhir.r4.model.OperationOutcome;
+import org.hl7.fhir.r4.model.Parameters;
+import org.hl7.fhir.r4.model.Parameters.ParametersParameterComponent;
 import org.hl7.fhir.r4.model.StringType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +25,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.HEADER_PREFER;
+import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.HEADER_PREFER_RESPOND_ASYNC;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.MEASURE_REPORT_TYPE_POPULATION;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_ID;
 import static de.medizininformatik_initiative.process.feasibility.variables.ConstantsFeasibility.VARIABLE_MEASURE_REPORT;
@@ -40,23 +51,42 @@ public class EvaluateCqlMeasureTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS) private IGenericClient storeClient;
     @Mock private DelegateExecution execution;
     @Mock private Variables variables;
+    @Mock private IOperationUntypedWithInput<Parameters> operation;
 
     @InjectMocks private EvaluateCqlMeasure service;
 
     @BeforeEach
     public void setUp() {
+        var report = new MeasureReport();
+        var code = new CodeableConcept();
+        var coding = code.getCodingFirstRep();
+        coding.setSystem(MEASURE_POPULATION);
+        coding.setCode(INITIAL_POPULATION);
+        report.getGroupFirstRep().getPopulationFirstRep().setCode(code);
+        when(storeClient.operation()
+                .onInstance("Measure/" + MEASURE_ID)
+                .named("evaluate-measure")
+                .withParameter(ArgumentMatchers.<Class<org.hl7.fhir.r4.model.Parameters>>any(), eq("periodStart"),
+                        any(DateType.class))
+                .andParameter(eq("periodEnd"), any(DateType.class))
+                .andParameter(eq("reportType"), stringTypeCaptor.capture())
+                .useHttpGet()
+                .preferResponseTypes(eq(List.of(MeasureReport.class, Bundle.class, OperationOutcome.class))))
+                        .thenReturn(operation);
+        when(operation.withAdditionalHeader(eq(HEADER_PREFER), eq(HEADER_PREFER_RESPOND_ASYNC))).thenReturn(operation);
         when(variables.getString(VARIABLE_MEASURE_ID)).thenReturn(MEASURE_ID);
     }
 
     @Test
-    public void testDoExecute() {
+    void testDoExecuteReturnsMeasureReport() {
         var report = new MeasureReport();
         var code = new CodeableConcept();
         var coding = code.getCodingFirstRep();
         coding.setSystem(MEASURE_POPULATION);
         coding.setCode(INITIAL_POPULATION);
         report.getGroupFirstRep().getPopulationFirstRep().setCode(code).setCount(0);
-        when(evaluateMeasure()).thenReturn(report);
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(report)));
 
         service.doExecute(execution, variables);
 
@@ -65,20 +95,14 @@ public class EvaluateCqlMeasureTest {
         assertThat(stringTypeCaptor.getValue().getValue()).isEqualTo(MEASURE_REPORT_TYPE_POPULATION);
     }
 
-    private MeasureReport evaluateMeasure() {
-        return storeClient.operation().onInstance("Measure/" + MEASURE_ID)
-                .named("evaluate-measure")
-                .withParameter(ArgumentMatchers.<Class<org.hl7.fhir.r4.model.Parameters>>any(), eq("periodStart"), any(DateType.class))
-                .andParameter(eq("periodEnd"), any(DateType.class))
-                .andParameter(eq("reportType"), stringTypeCaptor.capture())
-                .useHttpGet()
-                .returnResourceType(MeasureReport.class)
-                .execute();
-    }
-
     @Test
     void testFailsOnEmptyMeasureReport() {
-        when(evaluateMeasure()).thenReturn(new MeasureReport());
+        MeasureReport report = new MeasureReport().setIdentifier(List.of(new Identifier().setValue("foo")));
+        when(operation.execute())
+                .thenReturn(new Parameters()
+                        .addParameter(new ParametersParameterComponent()
+                                .setName("foo")
+                                .setResource(report)));
 
         assertThatThrownBy(() -> service.doExecute(execution, variables))
                 .hasMessage("Missing MeasureReport group");
@@ -86,9 +110,10 @@ public class EvaluateCqlMeasureTest {
 
     @Test
     void testFailsOnMissingPopulation() {
-        var report = new MeasureReport();
+        var report = new MeasureReport().setIdentifier(List.of(new Identifier().setValue("foo")));
         report.getGroupFirstRep().setCode(new CodeableConcept().setText("foo"));
-        when(evaluateMeasure()).thenReturn(report);
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(report)));
 
         assertThatThrownBy(() -> service.doExecute(execution, variables))
                 .hasMessage("Missing MeasureReport population");
@@ -96,9 +121,10 @@ public class EvaluateCqlMeasureTest {
 
     @Test
     void testFailsOnMissingPopulationCode() {
-        var report = new MeasureReport();
+        var report = new MeasureReport().setIdentifier(List.of(new Identifier().setValue("foo")));
         report.getGroupFirstRep().getPopulationFirstRep().setCount(0);
-        when(evaluateMeasure()).thenReturn(report);
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(report)));
 
         assertThatThrownBy(() -> service.doExecute(execution, variables))
                 .hasMessage("Missing MeasureReport population code");
@@ -106,9 +132,10 @@ public class EvaluateCqlMeasureTest {
 
     @Test
     void testFailsOnWrongPopulationCode() {
-        var report = new MeasureReport();
+        var report = new MeasureReport().setIdentifier(List.of(new Identifier().setValue("foo")));
         report.getGroupFirstRep().getPopulationFirstRep().setCode(new CodeableConcept().setText("foo"));
-        when(evaluateMeasure()).thenReturn(report);
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(report)));
 
         assertThatThrownBy(() -> service.doExecute(execution, variables))
                 .hasMessage("Missing MeasureReport initial-population code");
@@ -116,15 +143,67 @@ public class EvaluateCqlMeasureTest {
 
     @Test
     void testFailsOnMissingPopulationCount() {
-        var report = new MeasureReport();
+        var report = new MeasureReport().setIdentifier(List.of(new Identifier().setValue("foo")));
         var code = new CodeableConcept();
         var coding = code.getCodingFirstRep();
         coding.setSystem(MEASURE_POPULATION);
         coding.setCode(INITIAL_POPULATION);
         report.getGroupFirstRep().getPopulationFirstRep().setCode(code);
-        when(evaluateMeasure()).thenReturn(report);
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(report)));
 
         assertThatThrownBy(() -> service.doExecute(execution, variables))
                 .hasMessage("Missing MeasureReport population count");
+    }
+
+    @Test
+    void testDoExecuteReturnsBundleContainingMeasureReport() {
+        var report = new MeasureReport();
+        var code = new CodeableConcept();
+        var coding = code.getCodingFirstRep();
+        coding.setSystem(MEASURE_POPULATION);
+        coding.setCode(INITIAL_POPULATION);
+        report.getGroupFirstRep().getPopulationFirstRep().setCode(code).setCount(0);
+        var bundle = new Bundle().addEntry(new Bundle.BundleEntryComponent().setResource(report));
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(bundle)));
+
+        service.doExecute(execution, variables);
+
+        verify(variables).setResource(VARIABLE_MEASURE_REPORT, report);
+        assertThat(stringTypeCaptor.getValue()).isNotNull();
+        assertThat(stringTypeCaptor.getValue().getValue()).isEqualTo(MEASURE_REPORT_TYPE_POPULATION);
+    }
+
+    @Test
+    void testFailsOnBundleIsEmpty() {
+        var bundle = new Bundle();
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(bundle)));
+
+        assertThatThrownBy(() -> service.doExecute(execution, variables))
+                .hasMessage("Failed to extract MeasureReport from response");
+    }
+
+    @Test
+    void testFailsOnBundleContainingNonMeasureReportResource() {
+        var resource = new Medication().setIdentifier(List.of(new Identifier().setValue("foo")));
+        var bundle = new Bundle().addEntry(new Bundle.BundleEntryComponent().setResource(resource));
+        when(operation.execute())
+                .thenReturn(new Parameters().addParameter(new ParametersParameterComponent().setResource(bundle)));
+
+        assertThatThrownBy(() -> service.doExecute(execution, variables))
+                .hasMessage("Failed to extract MeasureReport from response");
+    }
+
+    @Test
+    void testFailsOnNonMeasureReportResource() {
+        var resource = new Medication().setIdentifier(List.of(new Identifier().setValue("foo")));
+        when(operation.execute())
+                .thenReturn(new Parameters()
+                        .addParameter(new ParametersParameterComponent().setResource(resource)));
+
+        assertThatThrownBy(() -> service.doExecute(execution, variables))
+                .hasMessage("Failed to extract MeasureReport from response");
     }
 }
