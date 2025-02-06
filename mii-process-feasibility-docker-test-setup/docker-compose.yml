@@ -13,7 +13,7 @@ services:
 
   # ---- Proxy ----------------------------------------------------------------
   proxy:
-    image: nginx:1.27.3
+    image: nginx:1.27.4
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "curl -ks https://localhost || exit 1"]
@@ -716,7 +716,7 @@ services:
     volumes:
     - "./dic-3/keycloak/realm-test.json:/opt/keycloak/data/import/realm-test.json"
   dic-3-store-proxy:
-    image: nginx:1.27.3
+    image: nginx:1.27.4
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "curl -ks https://localhost || exit 1"]
