@@ -695,7 +695,7 @@ services:
 
   # ---- DIC-3 - DEDICATED PROXY WITH SELF SIGNED CERT ------------------------
   dic-3-keycloak:
-    image: "keycloak/keycloak:26.1.0"
+    image: "keycloak/keycloak:26.1.2"
     command: ["start", "--import-realm"]
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000;echo -e \"GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n\" >&3;grep \"HTTP/1.1 200 OK\" <&3"]
