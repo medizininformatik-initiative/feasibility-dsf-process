@@ -1,6 +1,5 @@
 package de.medizininformatik_initiative.process.feasibility.spring.config;
 
-import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProvider;
 import de.medizininformatik_initiative.process.feasibility.EnhancedFhirWebserviceClientProviderImpl;
@@ -42,18 +41,15 @@ public class FeasibilityConfig {
 
     private final IGenericClient storeClient;
 
-    @Autowired private final FhirContext fhirContext;
     @Autowired private ProcessPluginApi api;
 
     private final EvaluationSettingsProvider evaluationSettingsProvider;
     private final FlareWebserviceClient flareWebserviceClient;
 
     public FeasibilityConfig(@Qualifier("store-client") IGenericClient storeClient,
-                             FhirContext fhirContext,
                              EvaluationSettingsProvider evaluationSettingsProvider,
                              FlareWebserviceClient flareWebserviceClient) {
         this.storeClient = storeClient;
-        this.fhirContext = fhirContext;
         this.evaluationSettingsProvider = evaluationSettingsProvider;
         this.flareWebserviceClient = flareWebserviceClient;
     }

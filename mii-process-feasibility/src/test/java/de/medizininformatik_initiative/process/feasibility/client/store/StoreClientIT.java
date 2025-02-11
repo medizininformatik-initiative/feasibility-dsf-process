@@ -1,38 +1,36 @@
 package de.medizininformatik_initiative.process.feasibility.client.store;
 
-import ca.uhn.fhir.context.FhirContext;
-import de.medizininformatik_initiative.process.feasibility.client.store.StoreClientConfiguration.ConnectionConfiguration;
-import de.medizininformatik_initiative.process.feasibility.client.store.StoreClientConfiguration.ProxyConfiguration;
-import de.medizininformatik_initiative.process.feasibility.client.store.StoreClientConfiguration.StoreAuthenticationConfiguration;
-import de.medizininformatik_initiative.process.feasibility.spring.config.DefaultTrustStoreUtils;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
 import lombok.NonNull;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.tls.HandshakeCertificates;
 import okhttp3.tls.HeldCertificate;
-import org.apache.http.ssl.SSLContexts;
 import org.hl7.fhir.r4.model.CapabilityStatement;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.NginxContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.URL;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Objects;
@@ -40,22 +38,19 @@ import java.util.Objects;
 import javax.net.ssl.SSLContext;
 
 import static de.medizininformatik_initiative.process.feasibility.client.variables.TestConstantsFeasibility.BLAZE_VERSION;
-import static de.medizininformatik_initiative.process.feasibility.client.variables.TestConstantsFeasibility.NGINX_VERSION;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.apache.http.HttpHeaders.PROXY_AUTHORIZATION;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("client")
 @Tag("store")
+@SpringBootTest(classes = StoreClientSpringConfig.class)
 @Testcontainers
 public class StoreClientIT {
 
     private static final Network DEFAULT_CONTAINER_NETWORK = Network.newNetwork();
 
-    @Container
-    public GenericContainer<?> fhirServer = new GenericContainer<>(
+    private static GenericContainer<?> fhirServer = new GenericContainer<>(
             DockerImageName.parse("samply/blaze:" + BLAZE_VERSION))
             .withExposedPorts(8080)
             .withNetwork(DEFAULT_CONTAINER_NETWORK)
@@ -63,287 +58,256 @@ public class StoreClientIT {
             .withEnv("LOG_LEVEL", "debug")
             .withReuse(true);
 
-    private StoreClientFactory storeClientFactory;
-
-    private static SSLContext DEFAULT_SSL_CONTEXT;
-
-    private static ConnectionConfiguration DEFAULT_CONNECTION_CONFIGURATION;
-
     @BeforeAll
-    static void setUpDefaults() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        var defaultTrustStore = DefaultTrustStoreUtils.loadDefaultTrustStore();
-        DEFAULT_SSL_CONTEXT = SSLContexts.custom()
-                .loadTrustMaterial(defaultTrustStore, null)
-                .build();
-
-        DEFAULT_CONNECTION_CONFIGURATION = ConnectionConfiguration.builder()
-                .connectionTimeoutMs(2000)
-                .connectionRequestTimeoutMs(20000)
-                .socketTimeoutMs(2000)
-                .build();
+    static void init() {
+        fhirServer.start();
     }
 
-    @BeforeEach
-    void createStoreClientFactory() {
-        var fhirContext = FhirContext.forR4();
-        storeClientFactory = new StoreClientFactory(fhirContext);
+    @AfterAll
+    static void shutdown() {
+        fhirServer.stop();
     }
 
-    @Test
-    public void configuredBearerTokenGetsSent() throws InterruptedException, IOException {
-        var investigationServer = createProxyServer(getTestFhirServerUrl());
-        investigationServer.start();
+    @Nested
+    @DisplayName("No Proxy")
+    class NoProxy {
 
-        var bearerToken = "not-a-bearer-token-but-sufficient-for-test";
-        var authCfg = StoreAuthenticationConfiguration.builder()
-                .bearerToken(bearerToken)
-                .build();
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(DEFAULT_SSL_CONTEXT)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .storeAuthenticationConfiguration(authCfg)
-                .build();
+        @Autowired @Qualifier("store-client") protected IGenericClient storeClient;
 
-        var investigationServerUrl = getProxyServerUrl(investigationServer)
-                .toString();
-        var client = storeClientFactory.createClient(investigationServerUrl, clientCfg);
-        client.capabilities().ofType(CapabilityStatement.class).execute();
+        @DynamicPropertySource
+        static void dynamicProperties(DynamicPropertyRegistry registry) {
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.base_url",
+                    () -> "http://%s:%s/fhir/".formatted(fhirServer.getHost(), fhirServer.getFirstMappedPort()));
+        }
 
-        var recordedRequest = investigationServer.takeRequest();
-        assertEquals("Bearer " + bearerToken, recordedRequest.getHeader(AUTHORIZATION));
+        @Test
+        @DisplayName("direct access without forwardProxy succeeds")
+        void testBasicAuth() throws InterruptedException {
+            var capabilities = storeClient.capabilities().ofType(CapabilityStatement.class).execute();
 
-        investigationServer.close();
+            assertThat(capabilities.getSoftware().getName()).containsIgnoringCase("blaze");
+        }
     }
 
-    @Test
-    public void configuredBasicAuthCredentialsGetSent() throws InterruptedException, IOException {
-        var investigationServer = createProxyServer(getTestFhirServerUrl());
-        investigationServer.start();
+    @Nested
+    @DisplayName("Basic Auth")
+    class RevProxyBasicAuth {
 
-        var basicAuthUsername = "test";
-        var basicAuthPassword = "foo";
-        var authCfg = StoreAuthenticationConfiguration.builder()
-                .basicAuthUsername(basicAuthUsername)
-                .basicAuthPassword(basicAuthPassword)
-                .build();
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(DEFAULT_SSL_CONTEXT)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .storeAuthenticationConfiguration(authCfg)
-                .build();
+        private static final String BASIC_AUTH_USERNAME = "foo";
+        private static final String BASIC_AUTH_PASSWORD = "bar";
 
-        var investigationServerUrl = getProxyServerUrl(investigationServer)
-                .toString();
-        var client = storeClientFactory.createClient(investigationServerUrl, clientCfg);
-        client.capabilities().ofType(CapabilityStatement.class).execute();
+        static MockWebServer proxy = createProxyServer(getTestFhirServerUrl());
 
-        var recordedRequest = investigationServer.takeRequest();
+        @AfterAll
+        static void tearDown() throws IOException {
+            proxy.close();
+        }
 
-        var basicAuthEncoded = Base64.getEncoder().encodeToString(String.format("%s:%s", basicAuthUsername,
-                basicAuthPassword).getBytes());
-        assertEquals("Basic " + basicAuthEncoded, recordedRequest.getHeader(AUTHORIZATION));
+        @Autowired @Qualifier("store-client") protected IGenericClient storeClient;
+        static final String BEARER_TOKEN = "not-a-bearer-token-but-sufficient-for-test";
 
-        investigationServer.close();
+        @DynamicPropertySource
+        static void dynamicProperties(DynamicPropertyRegistry registry) {
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.auth.basic.username",
+                    () -> BASIC_AUTH_USERNAME);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.auth.basic.password",
+                    () -> BASIC_AUTH_PASSWORD);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.base_url",
+                    () -> "http://%s:%s/fhir/".formatted(proxy.getHostName(), proxy.getPort()));
+        }
+
+        @Test
+        @DisplayName("configured basic auth credentials are set in authorization header")
+        void testBasicAuth() throws InterruptedException {
+            var basicAuthEncoded = "Basic %s".formatted(Base64.getEncoder()
+                    .encodeToString("%s:%s".formatted(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD).getBytes()));
+
+            var capabilities = storeClient.capabilities().ofType(CapabilityStatement.class).execute();
+            var recordedRequest = proxy.takeRequest();
+            assertThat(capabilities.getSoftware().getName()).containsIgnoringCase("blaze");
+            assertThat(recordedRequest.getHeader(AUTHORIZATION)).isEqualTo(basicAuthEncoded);
+        }
     }
 
-    @Test
-    public void requestToFhirServerWithoutProxySucceeds() {
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(DEFAULT_SSL_CONTEXT)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .build();
-        var client = storeClientFactory.createClient(getTestFhirServerUrl().toString(), clientCfg);
-        var res = client.capabilities().ofType(CapabilityStatement.class).execute();
+    @Nested
+    @DisplayName("Bearer Token")
+    class RevProxyBearerToken {
 
-        assertNotNull(res);
+        static MockWebServer proxy = createProxyServer(getTestFhirServerUrl());
+
+        @AfterAll
+        static void tearDown() throws IOException {
+            proxy.close();
+        }
+
+        @Autowired @Qualifier("store-client") protected IGenericClient storeClient;
+        static final String BEARER_TOKEN = "not-a-bearer-token-but-sufficient-for-test";
+
+        @DynamicPropertySource
+        static void dynamicProperties(DynamicPropertyRegistry registry) {
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.auth.bearer.token",
+                    () -> BEARER_TOKEN);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.base_url",
+                    () -> "http://%s:%s/fhir/".formatted(proxy.getHostName(), proxy.getPort()));
+        }
+
+        @Test
+        @DisplayName("configured bearer token is set in request header")
+        void testBearerToken() throws InterruptedException {
+            var capabilities = storeClient.capabilities().ofType(CapabilityStatement.class).execute();
+            var recordedRequest = proxy.takeRequest();
+
+            assertThat(capabilities.getSoftware().getName()).containsIgnoringCase("blaze");
+            assertThat(recordedRequest.getHeader(AUTHORIZATION)).isNotNull().contains(BEARER_TOKEN);
+        }
     }
 
+    @Nested
+    @DisplayName("Client Certificate")
+    class RevProxyClientCert {
 
-    @Test
-    public void testRequestToReverseProxyWithSelfSignedCertificate() throws IOException {
-        var localhost = InetAddress.getByName("localhost").getCanonicalHostName();
-        var localhostCert = new HeldCertificate.Builder()
-                .addSubjectAlternativeName(localhost)
+        private static final String CLIENT_CERT_PASSWORD = "foobar";
+        private static final String SERVER_CERT_PASSWORD = "barfoo";
+        static File clientCertificateStore;
+        static File serverCertificateStore;
+        static HeldCertificate rootCertificate = new HeldCertificate.Builder().certificateAuthority(0).build();
+        static HeldCertificate clientCertificate = new HeldCertificate.Builder().signedBy(rootCertificate).build();
+        static HeldCertificate serverCertificate = new HeldCertificate.Builder().commonName("ingen")
+                .addSubjectAlternativeName("localhost")
+                .signedBy(rootCertificate)
                 .build();
-
-        var proxyServerCert = new HandshakeCertificates.Builder()
-                .heldCertificate(localhostCert)
+        static HandshakeCertificates serverCertificates = new HandshakeCertificates.Builder()
+                .addTrustedCertificate(rootCertificate.certificate())
+                .heldCertificate(serverCertificate)
                 .build();
+        static MockWebServer proxy = createProxyServer(getTestFhirServerUrl(), serverCertificates.sslContext());
 
-        var testFhirServerUrl = getTestFhirServerUrl();
-        var proxyServer = createProxyServer(testFhirServerUrl, proxyServerCert.sslContext());
-        proxyServer.start();
+        @BeforeAll
+        static void setUp() throws Exception {
+            clientCertificateStore = createCertificateStore(clientCertificate, CLIENT_CERT_PASSWORD);
+            serverCertificateStore = createCertificateStore(serverCertificate, SERVER_CERT_PASSWORD);
+            proxy.requestClientAuth();
+        }
 
-        var trustedCerts = new HandshakeCertificates.Builder()
-                .addTrustedCertificate(localhostCert.certificate())
-                .build();
+        private static File createCertificateStore(HeldCertificate certificate, String password)
+                throws KeyStoreException, IOException, NoSuchAlgorithmException,
+                CertificateException, FileNotFoundException {
+            var store = KeyStore.getInstance("PKCS12");
+            var tempFile = File.createTempFile("cert", ".p12");
+            tempFile.deleteOnExit();
+            store.load(null, null);
+            store.setKeyEntry("cert", certificate.keyPair().getPrivate(), password.toCharArray(),
+                    new java.security.cert.X509Certificate[] { certificate.certificate() });
+            store.store(new FileOutputStream(tempFile), password.toCharArray());
+            return tempFile;
+        }
 
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(trustedCerts.sslContext())
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .build();
+        @AfterAll
+        static void tearDown() throws IOException {
+            proxy.close();
+        }
 
-        var client = storeClientFactory.createClient(getHttpsProxyServerUrl(proxyServer).toString(),
-                clientCfg);
-        assertDoesNotThrow(() -> client.capabilities().ofType(CapabilityStatement.class).execute());
+        @Autowired @Qualifier("store-client") protected IGenericClient storeClient;
 
-        proxyServer.close();
+        @DynamicPropertySource
+        static void dynamicProperties(DynamicPropertyRegistry registry) {
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.key_store_path",
+                    () -> clientCertificateStore.getAbsolutePath());
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.key_store_password",
+                    () -> CLIENT_CERT_PASSWORD);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.trust_store_path",
+                    () -> serverCertificateStore.getAbsolutePath());
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.trust_store_password",
+                    () -> SERVER_CERT_PASSWORD);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.base_url",
+                    () -> "https://%s:%s/fhir/".formatted(proxy.getHostName(), proxy.getPort()));
+        }
+
+        @Test
+        @DisplayName("configured client certificate is sent to forwardProxy")
+        void testBearerToken() throws InterruptedException {
+            var capabilities = storeClient.capabilities().ofType(CapabilityStatement.class).execute();
+            var recordedRequest = proxy.takeRequest();
+
+            assertThat(capabilities.getSoftware().getName()).containsIgnoringCase("blaze");
+            assertThat(recordedRequest.getHandshake().peerPrincipal())
+                    .isEqualTo(clientCertificate.certificate().getSubjectX500Principal());
+        }
     }
 
-    @Test
-    public void testRequestToReverseProxyWithClientCert() throws KeyStoreException, CertificateException, IOException,
-            NoSuchAlgorithmException, UnrecoverableKeyException, KeyManagementException {
-        // Make sure to run `create_certs_for_client_tests.sh` from the `scripts` directory first. This will be
-        // automatically triggered by maven when trying to run integration tests as it is coupled with a phase called
-        // `pre-integration-test`.
-        var nginxConf = getResource("nginx.conf");
-        var nginxTestProxyConfTemplate = getResource("reverse_proxy_client_cert.conf.template");
-        var staticFhirMetadata = getResource("fhir_metadata.json");
-        var indexFile = getResource("index.html");
-        var trustedCerts = getResource("../certs/ca.pem");
-        var serverCertChain = getResource("../certs/server_cert_chain.pem");
-        var serverCertKey = getResource("../certs/server_cert_key.pem");
-
-        NginxContainer<?> nginx = new NginxContainer<>("nginx:" + NGINX_VERSION)
-                .withExposedPorts(80)
-                .withFileSystemBind(nginxConf.getPath(), "/etc/nginx/nginx.conf", READ_ONLY)
-                .withFileSystemBind(staticFhirMetadata.getPath(), "/static/fhir_metadata.json", READ_ONLY)
-                .withFileSystemBind(indexFile.getPath(), "/usr/share/nginx/html/index.html", READ_ONLY)
-                .withFileSystemBind(nginxTestProxyConfTemplate.getPath(), "/etc/nginx/templates/default.conf.template", READ_ONLY)
-                .withFileSystemBind(trustedCerts.getPath(), "/etc/nginx/certificates/clientCA.pem", READ_ONLY)
-                .withFileSystemBind(serverCertChain.getPath(), "/etc/nginx/certs/server_cert.pem", READ_ONLY)
-                .withFileSystemBind(serverCertKey.getPath(), "/etc/nginx/certs/server_cert_key.pem", READ_ONLY)
-                .withNetwork(DEFAULT_CONTAINER_NETWORK);
-        nginx.start();
-
-        var serverTrustStoreStream = getResourceAsStream("../certs/ca.p12");
-        var trustStore = KeyStore.getInstance("PKCS12");
-        trustStore.load(serverTrustStoreStream, "changeit".toCharArray());
-        serverTrustStoreStream.close();
-
-        var clientCertStream = getResourceAsStream("../certs/client_key_store.p12");
-        var keyStore = KeyStore.getInstance("PKCS12");
-        keyStore.load(clientCertStream, "changeit".toCharArray());
-        clientCertStream.close();
-
-        var sslContextWithClientCert = SSLContexts.custom()
-                .loadTrustMaterial(trustStore, null)
-                .loadKeyMaterial(keyStore, "changeit".toCharArray())
-                .build();
-
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(sslContextWithClientCert)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .build();
-
-        var nginxUrl = String.format("https://%s:%d/fhir/", nginx.getHost(), nginx.getFirstMappedPort());
-        var client = storeClientFactory.createClient(nginxUrl, clientCfg);
-
-        assertDoesNotThrow(() -> client.capabilities().ofType(CapabilityStatement.class).execute());
-
-        nginx.close();
-    }
-
-    @Test
-    public void testRequestToReverseProxyWithCredentials() {
-        var nginxConf = getResource("nginx.conf");
-        var nginxTestProxyConfTemplate = getResource("reverse_proxy_with_credentials.conf.template");
-        var staticFhirMetadata = getResource("fhir_metadata.json");
-        var indexFile = getResource("index.html");
-        var passwordFile = getResource(".htpasswd");
-
-        NginxContainer<?> nginx = new NginxContainer<>("nginx:" + NGINX_VERSION)
-                .withExposedPorts(80)
-                .withFileSystemBind(nginxConf.getPath(), "/etc/nginx/nginx.conf", READ_ONLY)
-                .withFileSystemBind(staticFhirMetadata.getPath(), "/static/fhir_metadata.json", READ_ONLY)
-                .withFileSystemBind(indexFile.getPath(), "/usr/share/nginx/html/index.html", READ_ONLY)
-                .withFileSystemBind(passwordFile.getPath(), "/etc/auth/.htpasswd", READ_ONLY)
-                .withFileSystemBind(nginxTestProxyConfTemplate.getPath(), "/etc/nginx/templates/default.conf.template", READ_ONLY)
-                .withNetwork(DEFAULT_CONTAINER_NETWORK);
-        nginx.start();
-
-        var authCfg = StoreAuthenticationConfiguration.builder()
-                .basicAuthUsername("foo")
-                .basicAuthPassword("bar")
-                .build();
-
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(DEFAULT_SSL_CONTEXT)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .storeAuthenticationConfiguration(authCfg)
-                .build();
-
-        var nginxUrl = String.format("http://%s:%d/fhir/", nginx.getHost(), nginx.getFirstMappedPort());
-        var client = storeClientFactory.createClient(nginxUrl, clientCfg);
-        assertDoesNotThrow(() -> client.capabilities().ofType(CapabilityStatement.class).execute());
-
-        nginx.close();
-    }
-
-    @Test
-    public void testRequestWithForwardProxy() {
-        var nginxConf = this.getClass().getResource("nginx.conf");
-        var forwardProxyConfigTemplate = getResource("forward_proxy.conf.template");
-
-        NginxContainer<?> nginx = new NginxContainer<>("nginx:" + NGINX_VERSION)
-                .withExposedPorts(80)
-                .withFileSystemBind(nginxConf.getPath(), "/etc/nginx/nginx.conf", READ_ONLY)
-                .withFileSystemBind(forwardProxyConfigTemplate.getPath(), "/etc/nginx/templates/default.conf.template", READ_ONLY)
-                .withNetwork(DEFAULT_CONTAINER_NETWORK);
-        nginx.start();
-
-        var proxyCfg = ProxyConfiguration.builder()
-                .proxyHost(nginx.getHost())
-                .proxyPort(nginx.getFirstMappedPort())
-                .build();
-        var clientCfg = StoreClientConfiguration.builder()
-                .sslContext(DEFAULT_SSL_CONTEXT)
-                .connectionConfiguration(DEFAULT_CONNECTION_CONFIGURATION)
-                .proxyConfiguration(proxyCfg)
-                .build();
-
-        var client = storeClientFactory.createClient("http://fhir-server:8080/fhir/", clientCfg);
-        var res = client.capabilities().ofType(CapabilityStatement.class).execute();
-
-        assertNotNull(res);
-
-        nginx.close();
-    }
-
-    private MockWebServer createProxyServer(HttpUrl proxyTargetUrl) {
+    private static MockWebServer createProxyServer(HttpUrl proxyTargetUrl) {
         var mockServer = new MockWebServer();
         mockServer.setDispatcher(new MockServerProxyDispatcher(new OkHttpClient.Builder().build(), proxyTargetUrl));
         return mockServer;
     }
 
-    private MockWebServer createProxyServer(HttpUrl proxyTargetUrl, SSLContext sslContext) {
+    private static MockWebServer createForwardProxyServer(HttpUrl proxyTargetUrl) {
+        var mockServer = new MockWebServer();
+        mockServer.setDispatcher(
+                new MockServerForwardProxyDispatcher(new OkHttpClient.Builder().build(), proxyTargetUrl));
+        return mockServer;
+    }
+
+    private static MockWebServer createProxyServer(HttpUrl proxyTargetUrl, SSLContext sslContext) {
         var mockServer = createProxyServer(proxyTargetUrl);
         mockServer.useHttps(sslContext.getSocketFactory(), false);
         return mockServer;
     }
 
     @NonNull
-    private HttpUrl getTestFhirServerUrl() {
+    private static HttpUrl getTestFhirServerUrl() {
         return Objects.requireNonNull(HttpUrl.parse(String.format("http://%s:%d/fhir/",
                         fhirServer.getHost(),
                         fhirServer.getFirstMappedPort())),
                 "Can not parse URL of FHIR server.");
     }
 
-    private HttpUrl getProxyServerUrl(MockWebServer proxyServer) {
-        return HttpUrl.parse(String.format("http://%s:%d/fhir/", proxyServer.getHostName(), proxyServer.getPort()));
-    }
-
-    private HttpUrl getHttpsProxyServerUrl(MockWebServer proxyServer) {
-        return getProxyServerUrl(proxyServer).newBuilder().scheme("https")
-                .build();
-    }
-
-    private URL getResource(final String name) {
-        return this.getClass().getResource(name);
-    }
-
-    private InputStream getResourceAsStream(final String name) {
-        return this.getClass().getResourceAsStream(name);
+    @Nested
+    @DisplayName("Forward Proxy Basic Auth")
+    class ForwardProxyBasicAuth {
+    
+        private static final String BASIC_AUTH_USERNAME = "foo";
+        private static final String BASIC_AUTH_PASSWORD = "bar";
+    
+        static MockWebServer forwardProxy = createForwardProxyServer(getTestFhirServerUrl());
+    
+        @AfterAll
+        static void tearDown() throws IOException {
+            forwardProxy.close();
+        }
+    
+        @Autowired @Qualifier("store-client") protected IGenericClient storeClient;
+        static final String BEARER_TOKEN = "not-a-bearer-token-but-sufficient-for-test";
+    
+        @DynamicPropertySource
+        static void dynamicProperties(DynamicPropertyRegistry registry) {
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.proxy.host",
+                    () -> forwardProxy.getHostName());
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.proxy.port",
+                    () -> forwardProxy.getPort());
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.proxy.username",
+                    () -> BASIC_AUTH_USERNAME);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.proxy.password",
+                    () -> BASIC_AUTH_PASSWORD);
+            registry.add("de.medizininformatik_initiative.feasibility_dsf_process.client.store.base_url",
+                    () -> "http://%s:%s/fhir/".formatted(fhirServer.getHost(), fhirServer.getFirstMappedPort()));
+        }
+    
+        @Test
+        @DisplayName("configured forward proxy is used with basic auth credentials")
+        void testBasicAuth() throws InterruptedException {
+            var basicAuthEncoded = "Basic %s".formatted(Base64.getEncoder()
+                    .encodeToString("%s:%s".formatted(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD).getBytes()));
+    
+            var capabilities = storeClient.capabilities().ofType(CapabilityStatement.class).execute();
+    
+            if (forwardProxy.getRequestCount() == 2) {
+                var recordedRequest = forwardProxy.takeRequest(); // first request is the unauthorized one
+                assertThat(recordedRequest.getHeaders().names()).doesNotContain(PROXY_AUTHORIZATION);
+            }
+            var recordedRequest = forwardProxy.takeRequest();
+            assertThat(capabilities.getSoftware().getName()).containsIgnoringCase("blaze");
+            assertThat(recordedRequest.getHeader(PROXY_AUTHORIZATION)).isEqualTo(basicAuthEncoded);
+        }
     }
 }

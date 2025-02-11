@@ -1,6 +1,5 @@
 package de.medizininformatik_initiative.process.feasibility.spring.config;
 
-import ca.uhn.fhir.context.FhirContext;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,12 +28,6 @@ public class BaseConfig {
     @Value("${de.medizininformatik_initiative.feasibility_dsf_process.client.store.key_store_path:#{null}}") private String keyStorePath;
 
     @Value("${de.medizininformatik_initiative.feasibility_dsf_process.client.store.key_store_password:#{null}}") private String keyStorePassword;
-
-    @Bean
-    @Qualifier("base")
-    FhirContext fhirContext() {
-        return FhirContext.forR4();
-    }
 
     @Bean
     @Qualifier("base-client-trust")
