@@ -925,7 +925,7 @@ services:
         condition: service_healthy
 
   dic-4-store-init:
-    image: curlimages/curl:8.11.1
+    image: curlimages/curl:8.12.1
     entrypoint:
       - /bin/sh
     command:
